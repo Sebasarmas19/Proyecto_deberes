@@ -5,9 +5,10 @@ App web para que un hogar organice, recuerde y registre sus deberes domésticos,
 ## Stack
 
 - Next.js (App Router) + TypeScript
-- Supabase (Postgres + Auth + Storage) como backend
+- - Supabase (Postgres + Auth + Storage) como backend
+- Drizzle como ORM tipado contra Postgres
+- Drizzle Kit para migraciones de esquema
 - Vercel para el hosting
-- Opcional: Prisma o Drizzle como ORM contra el Postgres de Supabase
 - PWA (instalable en pantalla de inicio, con notificaciones)
 
 ## Arquitectura
@@ -20,6 +21,7 @@ App web para que un hogar organice, recuerde y registre sus deberes domésticos,
   - `lib/db/supabase.ts` → cliente único de Supabase (singleton)
 - Lecturas: directas desde server components vía services/repos. Escrituras: por server actions.
 - Sin sistema de módulos ni inyección de dependencias: se organiza con carpetas e imports directos.
+- `lib/db/` contiene el esquema de Drizzle y el cliente, más los repos que lo usan.
 
 ## Reglas inmutables
 
@@ -48,3 +50,7 @@ El detalle vive en `docs/`. Consulta el archivo relevante según la tarea:
 - `docs/01_La_Idea.md` — la visión y cómo funciona todo el sistema
 - `docs/02_El_Reglamento.md` — las reglas de negocio caso por caso, con la tabla de puntos
 - `docs/03_Modelo_de_Datos.md` — el esquema de la base de datos (tablas, columnas, relaciones, matriz de puntos)
+
+## Nota sobre la versión de Next.js
+
+Este proyecto usa Next.js 16, que tiene cambios importantes respecto a versiones anteriores. Antes de escribir código relacionado con routing, server actions o configuración, consulta `AGENTS.md` y `node_modules/next/dist/docs/` para no asumir convenciones de versiones previas.

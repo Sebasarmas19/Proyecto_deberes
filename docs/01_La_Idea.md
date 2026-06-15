@@ -3,6 +3,20 @@
 > Documento de concepto. Explica qué es, para qué sirve y cómo funciona todo el sistema. El detalle de las reglas exactas vive en el documento aparte **"El Reglamento"**.
 
 ---
+Este es un **motor genérico de gestión de deberes domésticos** que resuelve 
+un problema común: en cualquier hogar con varias personas, hay tareas que 
+se rotan, tareas opcionales, y nadie recuerda quién hizo qué. La app da 
+respuesta: recordatorio automático, registro permanente, rotación justa, 
+puntos y rankings que motivan a ayudar.
+
+**Completamente configurable:** el admin define sus propios deberes (rotativos, 
+reclamables, opcionales), sus propios participantes, sus propios valores de 
+puntos. No está cableada para un caso específico.
+
+**Ejemplo concreto (caso de uso):** Samuel (24) y sus dos hermanos comparten 
+casa en Caracas. Tienen 3 deberes principales que rotan (Sofi el perro, 
+cocinar, lavar platos), extras de fin de semana, y opcionales personales 
+(cuarto, clóset). Esta app es lo que usan para organizarse sin peleas.
 
 ## 1. Para qué existe
 
@@ -19,7 +33,7 @@ Esta página web resuelve eso. Hace cuatro cosas:
 
 ## 2. Cómo funciona, en pocas palabras
 
-Los tres deberes principales rotan entre los tres hermanos, de modo que cada quien pasa por los tres en un ciclo de tres días. La rotación se calcula sola: nadie tiene que asignar nada a mano.
+Los tres deberes prinscipales rotan entre los tres hermanos, de modo que cada quien pasa por los tres en un ciclo de tres días. La rotación se calcula sola: nadie tiene que asignar nada a mano.
 
 | Día | Hermano A | Hermano B | Hermano C |
 |-----|-----------|-----------|-----------|
