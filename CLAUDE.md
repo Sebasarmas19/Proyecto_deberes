@@ -43,6 +43,13 @@ App web para que un hogar organice, recuerde y registre sus deberes domésticos,
 - transacción de puntos — una suma o resta en el libro mayor
 - los cuatro rankings: general, confiable (porcentaje), solidario, responsable de la casa
 
+## Cómo trabajar con el usuario (IMPORTANTE)
+
+- **Explicar siempre.** Después de cada respuesta y de cada cosa que haga, explicar exactamente qué fue lo que hice. Lo más importante para el usuario es **entender** lo que se está haciendo.
+- **Invitar a preguntar.** El usuario puede no entender algo; dejar espacio para que haga preguntas y responderlas con claridad antes de seguir.
+- **Resumen al terminar código.** Cada vez que implemente o termine de implementar código, generar al final un **resumen claro y específico de todo lo que hice**, pensado para que el usuario lo entienda por completo (qué archivos, qué hace cada uno, por qué).
+- Lenguaje claro y sin asumir conocimiento previo de backend; el usuario está aprendiendo.
+
 ## Especificación completa
 
 El detalle vive en `docs/`. Consulta el archivo relevante según la tarea:
