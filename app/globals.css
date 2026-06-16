@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/*
+ * Tokens del sistema de diseno "Deberes de la Casa" (calido / acogedor).
+ * Paleta tierra-crema con acento terracota, miel para los no negociables y
+ * verde para "cumplido". Definidos aqui para reutilizarlos en toda la app.
+ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Tipografias (las variables las inyecta next/font en <html>). */
+  --font-sans: var(--font-hanken);
+  --font-display: var(--font-bricolage);
+
+  /* Superficies */
+  --color-crema: #f3ead9; /* fondo de pantalla */
+  --color-crema-card: #fffdf9; /* tarjetas */
+  --color-crema-soft: #fbf3e4; /* tarjetas suaves (extras) */
+
+  /* Tinta y texto */
+  --color-tinta: #38302a; /* texto principal */
+
+  /* Acentos */
+  --color-terracota: #e2733f; /* accion primaria */
+  --color-terracota-deep: #d2602f; /* gradiente de la accion */
+  --color-verde: #5c9a6a; /* cumplido */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  /* El diseno es de tema claro; evita que el navegador lo fuerce a oscuro. */
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-crema);
+  color: var(--color-tinta);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Quita el retardo de 300ms al tocar y evita el flash gris en moviles. */
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Animaciones del diseno: aparicion del check y entrada suave. */
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes riseIn {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pop {
+  animation: pop 0.3s ease;
+}
+
+.animate-pop-lg {
+  animation: pop 0.5s ease;
+}
+
+/* Respeta a quien prefiere menos movimiento (accesibilidad). */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pop,
+  .animate-pop-lg {
+    animation: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+  }
 }
