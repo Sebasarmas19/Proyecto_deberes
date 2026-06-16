@@ -15,7 +15,7 @@ puntos. No está cableada para un caso específico.
 
 **Ejemplo concreto (caso de uso):** Samuel (24) y sus dos hermanos comparten 
 casa en Caracas. Tienen 3 deberes principales que rotan (Sofi el perro, 
-cocinar, lavar platos), extras de fin de semana, y opcionales personales 
+cocinar, lavar platos), extras reclamables de la semana, y opcionales personales 
 (cuarto, clóset). Esta app es lo que usan para organizarse sin peleas.
 
 ## 1. Para qué existe
@@ -51,18 +51,18 @@ Cada **domingo** confirmamos el plan de la semana, ajustado para que sea justo s
 ### Deberes no negociables (todos los días, rotativos)
 Estos **tienen que cumplirse sea como sea**: Sofi, cocinar y platos. Valen **10 puntos** cada uno. Se marcan con un simple check (confianza, sin foto).
 
-### Extras reclamables del fin de semana (viernes a domingo)
-Nadie los tiene asignados: el que quiera los hace y se gana los puntos. Requieren foto de prueba.
-- **Lavar ropa** (3 tandas) → 15 puntos
+### Extras reclamables de la semana
+Nadie los tiene asignados: el que quiera los hace y se gana los puntos. Requieren foto de prueba. El admin define, por cada extra, **en qué días aparece** (toda la semana, fin de semana o días específicos) y **cuántas veces se puede reclamar en total** durante el período (semanal o mensual). El cupo es del hogar: varios pueden reclamar el mismo extra en días distintos hasta agotarlo.
+- **Lavar ropa** (3 tandas) → 15 puntos (hasta 3 reclamos por semana)
 - **Limpieza profunda** → 20 puntos
-
-### Extra mensual
-- **Bañar a Sofi** → 20 puntos (una vez al mes, con foto)
+- **Bañar a Sofi** → 20 puntos (disponible cualquier día, máximo 1 reclamo al mes)
 
 ### Opcionales personales (día por medio, toda la semana)
 Cada quien cuida lo suyo. Requieren foto de prueba.
 - **Cuarto ordenado** → 2.5 puntos
 - **Clóset ordenado** → 2.5 puntos
+
+> **Sobre los criterios de cada deber:** cada deber puede listar los criterios que definen qué significa "cumplido" (ej. para Sofi: bajarla, darle comida y agua). Esa lista se muestra **solo como referencia**: no se tilda criterio por criterio. Se marca el deber completo con un único botón **"Marcar como cumplido"**, lo que afirma que se cumplieron todos.
 
 ---
 
@@ -129,7 +129,7 @@ Si agregamos la página a la pantalla de inicio del teléfono, puede mandar **no
 Hay un modo admin al que se entra con usuario y contraseña. El admin puede:
 
 - Crear y editar el plan de la semana desde la página (no a nivel de código, para que siempre se pueda ajustar).
-- Editar, añadir o eliminar deberes adicionales.
+- Editar, añadir o eliminar deberes adicionales, y configurar la **disponibilidad** (días en que aparecen) y los **cupos** de los extras (cuántas veces se reclaman en total y si el período es semanal o mensual).
 - Editar deberes cumplidos: anular puntaje, añadir puntos por un deber olvidado, asignar o quitar deberes hechos.
 - Ver y editar el puntaje de todos.
 - Decidir puntaje parcial (ej. ropa con menos de 3 tandas).
@@ -141,7 +141,7 @@ Hay un modo admin al que se entra con usuario y contraseña. El admin puede:
 
 ## 9. El ritual del domingo
 
-Cada domingo se confirma el plan de la semana: se ajusta a los horarios de cada quien para que sea lo más justo posible, se declaran las ausencias conocidas y se abren los extras del fin de semana. Si pasa algo imprevisto en la semana, el admin edita la excepción.
+Cada domingo se confirma el plan de la semana: se ajusta a los horarios de cada quien para que sea lo más justo posible, se declaran las ausencias conocidas y se revisa la configuración de los extras de la semana. Si pasa algo imprevisto en la semana, el admin edita la excepción.
 
 ---
 

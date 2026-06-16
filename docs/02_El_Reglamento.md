@@ -40,14 +40,13 @@ Se cumple cuando:
 
 *Se marca con check, sin foto.*
 
-### 1.4 Extras del fin de semana (reclamables · viernes a domingo · con foto)
-- **Lavar ropa (15 pts):** meter a lavar, sacar y pasar a la secadora un mínimo de **3 tandas**. El admin puede otorgar puntaje parcial por menos.
+### 1.4 Extras de la semana (reclamables · con foto)
+Los extras no están atados al fin de semana. El admin configura cada uno con tres cosas: **(a)** los días en que aparece (toda la semana, fin de semana, o días específicos); **(b)** el máximo total de reclamos por período (es el cupo del hogar, no por persona); **(c)** si ese período es **semanal** o **mensual**. Varios participantes pueden reclamar el mismo extra en días distintos hasta agotar el cupo; cuando se agota, deja de poder reclamarse hasta que el período reinicie.
+- **Lavar ropa (15 pts):** meter a lavar, sacar y pasar a la secadora un mínimo de **3 tandas**. Hasta **3 reclamos por semana**. El admin puede otorgar puntaje parcial por menos.
 - **Limpieza profunda (20 pts):** barrer la casa, pasar coleto, y recoger las papeleras de los baños, botarlas y poner bolsas nuevas.
+- **Bañar a Sofi (20 pts):** aplicarle agua y shampoo, desenredarla, y secarla bien. Disponible cualquier día, con período **mensual** y un máximo de **1 reclamo**.
 
-### 1.5 Extra mensual (reclamable · con foto)
-- **Bañar a Sofi (20 pts):** aplicarle agua y shampoo, desenredarla, y secarla bien. Una vez al mes.
-
-### 1.6 Opcionales personales (día por medio, toda la semana · con foto)
+### 1.5 Opcionales personales (día por medio, toda la semana · con foto)
 - **Cuarto ordenado (2.5 pts):** cama tendida, todo en su lugar, escritorio ordenado.
 - **Clóset ordenado (2.5 pts):** ropa ordenada y todo donde corresponde.
 
@@ -110,6 +109,7 @@ Se cumple cuando:
 1. Los **deberes no negociables** se marcan con un simple check. Funcionan por confianza.
 2. Los **deberes opcionales y adicionales** requieren **foto o prueba** de que se hicieron.
 3. **Cubrir a otro** requiere justificación **y** la confirmación del ayudado (Art. 3).
+4. Los **criterios de aceptación** de un deber (la lista de qué significa "cumplido") se muestran **solo como referencia**. No se tilda criterio por criterio: se marca el deber completo con un único botón **"Marcar como cumplido"**, lo que afirma que se cumplieron todos los criterios.
 
 ---
 
@@ -117,15 +117,16 @@ Se cumple cuando:
 
 1. Se accede al modo admin con usuario y contraseña.
 2. El admin puede: crear y editar el plan de la semana, añadir/editar/eliminar deberes adicionales, editar deberes cumplidos (anular o añadir puntaje, asignar o quitar), ver y editar el puntaje de todos, otorgar puntaje parcial, gestionar la rotación, registrar ausencias y ajustar los valores de puntaje.
-3. **Toda acción del admin queda en un registro de auditoría visible para los tres** (quién, qué, cuándo y por qué).
-4. Los cambios al **horario de la semana** requieren el acuerdo de los tres.
+3. Por cada extra reclamable, el admin configura: los **días de disponibilidad** (toda la semana, fin de semana o días específicos), el **máximo total de reclamos** y el **período** sobre el que se cuenta y reinicia ese máximo (semanal o mensual).
+4. **Toda acción del admin queda en un registro de auditoría visible para los tres** (quién, qué, cuándo y por qué).
+5. Los cambios al **horario de la semana** requieren el acuerdo de los tres.
 
 ---
 
 ## Artículo 9 · Tiempos
 
 1. El día se **cierra a las 3:00 AM (hora de Caracas)**. Lo que se marque antes de esa hora cuenta para el día anterior. Lo que quede sin marcar después, cuenta como no hecho (el admin lo corrige si fue un olvido genuino).
-2. Cada **domingo** se confirma el plan de la semana, se declaran las ausencias y se abren los extras del fin de semana.
+2. Cada **domingo** se confirma el plan de la semana, se declaran las ausencias y se revisa la configuración de los extras de la semana.
 
 ---
 

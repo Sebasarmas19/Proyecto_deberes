@@ -31,6 +31,26 @@ function leerBooleano(formData: FormData, campo: string): boolean {
   return valor === "on" || valor === "true";
 }
 
+/**
+ * Lee una lista de dias del formulario (varios checkboxes con el mismo nombre).
+ * Devuelve `undefined` si no se envio ninguno, para que el service aplique su
+ * valor por defecto (toda la semana) en vez de pisar con una lista vacia.
+ */
+function leerDias(formData: FormData, campo: string): string[] | undefined {
+  const valores = formData.getAll(campo).map(String);
+  return valores.length > 0 ? valores : undefined;
+}
+
+/**
+ * Lee el cupo de reclamos. Vacio o ausente = null (sin limite); cualquier otro
+ * valor se pasa como numero para que el service lo valide.
+ */
+function leerMaxReclamos(formData: FormData, campo: string): number | null {
+  const valor = formData.get(campo);
+  if (valor === null || String(valor).trim() === "") return null;
+  return Number(valor);
+}
+
 export async function crearDeberAction(
   formData: FormData,
 ): Promise<Resultado<Deber>> {
@@ -47,6 +67,8 @@ export async function crearDeberAction(
       cadencia: String(
         formData.get("cadencia") ?? "",
       ) as CrearDeberInput["cadencia"],
+      diasDisponibles: leerDias(formData, "diasDisponibles"),
+      maxReclamos: leerMaxReclamos(formData, "maxReclamos"),
       requiereFoto: leerBooleano(formData, "requiereFoto"),
     };
     const deber = await crearDeber(input);
@@ -75,6 +97,8 @@ export async function editarDeberAction(
       cadencia: String(
         formData.get("cadencia") ?? "",
       ) as EditarDeberInput["cadencia"],
+      diasDisponibles: leerDias(formData, "diasDisponibles"),
+      maxReclamos: leerMaxReclamos(formData, "maxReclamos"),
       requiereFoto: leerBooleano(formData, "requiereFoto"),
     };
     const deber = await editarDeber(id, input);

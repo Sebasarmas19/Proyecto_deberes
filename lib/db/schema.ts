@@ -83,9 +83,28 @@ export const deberes = pgTable("deberes", {
   esPersonal: boolean("es_personal").notNull().default(false),
   // Soporta decimales (ej. 2.5).
   puntos: numeric("puntos").notNull(),
+  // Para reclamables, la cadencia indica el periodo de reinicio del cupo
+  // ('semanal' o 'mensual'). Para rotativos/opcionales, su frecuencia.
   cadencia: text("cadencia", {
-    enum: ["diaria", "fin_de_semana", "dia_por_medio", "mensual"],
+    enum: ["diaria", "dia_por_medio", "semanal", "mensual"],
   }).notNull(),
+  // Dias de la semana en que el deber se muestra a los usuarios.
+  // "Toda la semana" = los 7 dias; "fin de semana" = viernes, sabado, domingo.
+  diasDisponibles: text("dias_disponibles")
+    .array()
+    .notNull()
+    .default([
+      "lunes",
+      "martes",
+      "miercoles",
+      "jueves",
+      "viernes",
+      "sabado",
+      "domingo",
+    ]),
+  // Tope total de reclamos por periodo (cupo del hogar, NO por persona).
+  // Null = sin limite. Solo aplica a reclamables.
+  maxReclamos: integer("max_reclamos"),
   // Los obligatorios = false (check); reclamables/opcionales = true.
   requiereFoto: boolean("requiere_foto").notNull().default(false),
   activo: boolean("activo").notNull().default(true),

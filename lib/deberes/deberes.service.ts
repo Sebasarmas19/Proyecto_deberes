@@ -21,9 +21,21 @@ type Cadencia = Deber["cadencia"];
 const TIPOS_ASIGNACION: readonly TipoAsignacion[] = ["rotativo", "reclamable"];
 const CADENCIAS: readonly Cadencia[] = [
   "diaria",
-  "fin_de_semana",
   "dia_por_medio",
+  "semanal",
   "mensual",
+];
+
+// Dias validos para `diasDisponibles`. "Toda la semana" = los 7; "fin de
+// semana" = viernes, sabado, domingo.
+const DIAS_SEMANA: readonly string[] = [
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+  "domingo",
 ];
 
 export type CrearDeberInput = {
@@ -33,6 +45,10 @@ export type CrearDeberInput = {
   esPersonal?: boolean;
   puntos: number;
   cadencia: Cadencia;
+  // Dias en que el deber se muestra. Si se omite, se asume toda la semana.
+  diasDisponibles?: string[];
+  // Cupo total de reclamos por periodo (solo reclamables). Null = sin limite.
+  maxReclamos?: number | null;
   requiereFoto?: boolean;
 };
 
@@ -72,6 +88,39 @@ function validarCadencia(valor: Cadencia): void {
   }
 }
 
+/** Limpia y valida la lista de dias en que el deber se muestra. */
+function validarDiasDisponibles(dias: string[]): string[] {
+  const limpios = dias.map((d) => d.trim().toLowerCase()).filter(Boolean);
+  if (limpios.length === 0) {
+    throw new Error("Debe indicar al menos un dia de disponibilidad.");
+  }
+  for (const dia of limpios) {
+    if (!DIAS_SEMANA.includes(dia)) {
+      throw new Error(`Dia de disponibilidad no valido: "${dia}".`);
+    }
+  }
+  // Sin duplicados y en orden de la semana.
+  return DIAS_SEMANA.filter((d) => limpios.includes(d));
+}
+
+/**
+ * Valida el cupo de reclamos. Solo aplica a reclamables; si se envia para un
+ * deber no reclamable es un error. Null = sin limite.
+ */
+function validarMaxReclamos(
+  maxReclamos: number | null | undefined,
+  tipoAsignacion: TipoAsignacion,
+): number | null {
+  if (maxReclamos === null || maxReclamos === undefined) return null;
+  if (tipoAsignacion !== "reclamable") {
+    throw new Error("El cupo de reclamos solo aplica a deberes reclamables.");
+  }
+  if (!Number.isInteger(maxReclamos) || maxReclamos < 1) {
+    throw new Error("El cupo de reclamos debe ser un entero mayor o igual a 1.");
+  }
+  return maxReclamos;
+}
+
 /**
  * Crea un deber en el hogar actual. `puntos` se guarda como texto porque la
  * columna es numeric (soporta decimales como 2.5 sin errores de redondeo).
@@ -81,6 +130,15 @@ export async function crearDeber(input: CrearDeberInput): Promise<Deber> {
   validarPuntos(input.puntos);
   validarTipoAsignacion(input.tipoAsignacion);
   validarCadencia(input.cadencia);
+  const maxReclamos = validarMaxReclamos(
+    input.maxReclamos,
+    input.tipoAsignacion,
+  );
+  // Si no se envian dias, el deber se muestra toda la semana (los 7 dias).
+  const diasDisponibles =
+    input.diasDisponibles === undefined
+      ? DIAS_SEMANA.slice()
+      : validarDiasDisponibles(input.diasDisponibles);
 
   const hogarId = await obtenerHogarActualId();
 
@@ -92,6 +150,8 @@ export async function crearDeber(input: CrearDeberInput): Promise<Deber> {
     esPersonal: input.esPersonal ?? false,
     puntos: String(input.puntos),
     cadencia: input.cadencia,
+    diasDisponibles,
+    maxReclamos,
     requiereFoto: input.requiereFoto ?? false,
   });
 }
@@ -111,6 +171,8 @@ export async function editarDeber(
     esPersonal: boolean;
     puntos: string;
     cadencia: Cadencia;
+    diasDisponibles: string[];
+    maxReclamos: number | null;
     requiereFoto: boolean;
   }> = {};
 
@@ -126,6 +188,15 @@ export async function editarDeber(
   if (input.cadencia !== undefined) {
     validarCadencia(input.cadencia);
     cambios.cadencia = input.cadencia;
+  }
+  if (input.diasDisponibles !== undefined) {
+    cambios.diasDisponibles = validarDiasDisponibles(input.diasDisponibles);
+  }
+  if (input.maxReclamos !== undefined) {
+    // El cupo se valida contra el tipo efectivo: el que se este enviando o,
+    // si no se cambia, el que ya tenia el deber.
+    const tipoEfectivo = input.tipoAsignacion ?? existente.tipoAsignacion;
+    cambios.maxReclamos = validarMaxReclamos(input.maxReclamos, tipoEfectivo);
   }
   if (input.esObligatorio !== undefined) cambios.esObligatorio = input.esObligatorio;
   if (input.esPersonal !== undefined) cambios.esPersonal = input.esPersonal;

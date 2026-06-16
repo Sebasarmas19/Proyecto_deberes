@@ -1,0 +1,2 @@
+ALTER TABLE "deberes" ADD COLUMN "dias_disponibles" text[] DEFAULT '{"lunes","martes","miercoles","jueves","viernes","sabado","domingo"}' NOT NULL;--> statement-breakpoint
+ALTER TABLE "deberes" ADD COLUMN "max_reclamos" integer;

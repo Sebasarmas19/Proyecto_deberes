@@ -8,6 +8,13 @@
       "when": 1781506548811,
       "tag": "0000_esquema_inicial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781572133682,
+      "tag": "0001_brief_monster_badoon",
+      "breakpoints": true
     }
   ]
 }

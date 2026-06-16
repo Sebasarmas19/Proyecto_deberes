@@ -72,7 +72,9 @@ Los deberes, totalmente configurables por el admin. Dos ejes independientes: `ti
 | es_obligatorio | boolean | no negociable: hay penalización si nadie lo hace |
 | es_personal | boolean | cada quien hace el suyo (ej. cuarto, clóset) vs comunitario |
 | puntos | numeric | soporta decimales (ej. 2.5) |
-| cadencia | text | `'diaria'` \| `'fin_de_semana'` \| `'dia_por_medio'` \| `'mensual'` |
+| cadencia | text | `'diaria'` \| `'dia_por_medio'` \| `'semanal'` \| `'mensual'`. Para reclamables indica el período de reinicio del cupo (`'semanal'` o `'mensual'`) |
+| dias_disponibles | text[] / jsonb | días de la semana en que el deber se muestra. "Toda la semana" = los 7 días; "fin de semana" = viernes, sábado y domingo |
+| max_reclamos | int | nullable — número total de veces que el extra puede reclamarse por período (total del hogar, no por persona). Null = sin límite. Solo aplica a reclamables |
 | requiere_foto | boolean | los obligatorios = false (check); reclamables/opcionales = true |
 | activo | boolean | default true — retirar sin borrar historial |
 | creado_en | timestamptz | |
@@ -208,6 +210,7 @@ El campo `transacciones_puntos.tipo` codifica cada evento. El motor traduce así
 
 Reglas clave del motor:
 - El `bono_ayuda` solo se otorga si el participante ya cumplió su propio deber del día **y** el ayudado confirmó (`registros.confirmado = true`).
+- Al reclamar un extra, el motor cuenta los `registros` con estado `'reclamado'` de ese deber dentro del período actual (semanal o mensual, según `cadencia`); solo permite el reclamo si ese conteo es menor que `max_reclamos`. El conteo es **total del hogar, no por participante**: varios participantes pueden reclamar el mismo extra en días distintos hasta agotar el cupo. Cuando se agota, el extra deja de poder reclamarse hasta que el período reinicie.
 - El ranking **Confiable** (porcentaje) = deberes propios cumplidos ÷ deberes que le tocaban los días presentes. Las ausencias no entran en el denominador.
 - Una ausencia válida no genera penalización ni puntos: simplemente el deber no aplica ese día.
 
