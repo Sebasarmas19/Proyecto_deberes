@@ -27,7 +27,7 @@ import {
 export async function evaluarLogrosAction(): Promise<Resultado<LogroNuevo[]>> {
   try {
     const nuevos = await evaluarLogrosTodos();
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(nuevos);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -48,7 +48,7 @@ export async function cerrarMesAction(
         ? mesParam.trim()
         : formatearFechaISO(obtenerFechaDeNegocio()).slice(0, 7);
     const resultado = await cerrarMes(mes);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(resultado);
   } catch (e) {
     return fallo(mensajeDeError(e));

@@ -31,7 +31,7 @@ export async function generarHoyAction(
   try {
     const sobrescribir = formData?.get("sobrescribir") === "on";
     const creadas = await generarAsignacionesDeHoy({ sobrescribir });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(creadas.length);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -49,7 +49,7 @@ export async function generarSemanaAction(
     const total = await generarAsignacionesRango(obtenerFechaDeNegocio(), 7, {
       sobrescribir,
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(total);
   } catch (e) {
     return fallo(mensajeDeError(e));

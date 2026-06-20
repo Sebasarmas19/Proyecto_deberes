@@ -38,7 +38,7 @@ export async function marcarCumplidoAction(
       deberId: requerir(formData, "deberId"),
       participanteId: requerir(formData, "participanteId"),
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(registro);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -56,7 +56,7 @@ export async function cubrirDeberAction(
       nota: formData.get("nota") ? String(formData.get("nota")) : null,
       fotoUrl: formData.get("fotoUrl") ? String(formData.get("fotoUrl")) : null,
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(registro);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -71,7 +71,7 @@ export async function confirmarCoberturaAction(
       registroId: requerir(formData, "registroId"),
       participanteId: requerir(formData, "participanteId"),
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(registro);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -88,7 +88,7 @@ export async function reclamarExtraAction(
       fotoUrl: formData.get("fotoUrl") ? String(formData.get("fotoUrl")) : null,
       nota: formData.get("nota") ? String(formData.get("nota")) : null,
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(registro);
   } catch (e) {
     return fallo(mensajeDeError(e));

@@ -70,9 +70,12 @@ export async function crearDeberAction(
       diasDisponibles: leerDias(formData, "diasDisponibles"),
       maxReclamos: leerMaxReclamos(formData, "maxReclamos"),
       requiereFoto: leerBooleano(formData, "requiereFoto"),
+      asignadoA: formData.get("asignadoA") ? String(formData.get("asignadoA")) : null,
+      limitePorPersona: leerBooleano(formData, "limitePorPersona"),
+      criterios: formData.getAll("criterios").map(String).filter((c) => c.trim() !== ""),
     };
     const deber = await crearDeber(input);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(deber);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -100,9 +103,12 @@ export async function editarDeberAction(
       diasDisponibles: leerDias(formData, "diasDisponibles"),
       maxReclamos: leerMaxReclamos(formData, "maxReclamos"),
       requiereFoto: leerBooleano(formData, "requiereFoto"),
+      asignadoA: formData.get("asignadoA") ? String(formData.get("asignadoA")) : null,
+      limitePorPersona: leerBooleano(formData, "limitePorPersona"),
+      criterios: formData.getAll("criterios").map(String).filter((c) => c.trim() !== ""),
     };
     const deber = await editarDeber(id, input);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(deber);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -116,7 +122,7 @@ export async function desactivarDeberAction(
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del deber.");
     const deber = await desactivarDeber(id);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(deber);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -130,7 +136,7 @@ export async function reactivarDeberAction(
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del deber.");
     const deber = await reactivarDeber(id);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(deber);
   } catch (e) {
     return fallo(mensajeDeError(e));

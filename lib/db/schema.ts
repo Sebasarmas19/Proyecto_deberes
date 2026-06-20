@@ -40,6 +40,8 @@ export const hogar = pgTable("hogar", {
   penalizacionColectiva: numeric("penalizacion_colectiva")
     .notNull()
     .default("10"),
+  // Contraseña del perfil Admin
+  claveAdmin: text("clave_admin").notNull(),
   creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
 });
 
@@ -107,6 +109,12 @@ export const deberes = pgTable("deberes", {
   maxReclamos: integer("max_reclamos"),
   // Los obligatorios = false (check); reclamables/opcionales = true.
   requiereFoto: boolean("requiere_foto").notNull().default(false),
+  // [NUEVO] Para asignar un deber fijo a alguien (ej. Obligatorio fijo o Extra exclusivo)
+  asignadoA: uuid("asignado_a").references(() => participantes.id, {
+    onDelete: "set null",
+  }),
+  // [NUEVO] Define si el max_reclamos es un pozo común o un cupo por participante
+  limitePorPersona: boolean("limite_por_persona").notNull().default(false),
   activo: boolean("activo").notNull().default(true),
   creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
 });
@@ -124,8 +132,26 @@ export const criteriosDeber = pgTable("criterios_deber", {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// asignaciones — plan semanal de los deberes rotativos: quien hace que cada dia.
-// Lo genera el motor de rotacion y lo edita el admin.
+// plan_semanal — la plantilla fija de deberes obligatorios de la semana.
+// ─────────────────────────────────────────────────────────────────────────────
+export const planSemanal = pgTable("plan_semanal", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  hogarId: uuid("hogar_id")
+    .notNull()
+    .references(() => hogar.id, { onDelete: "cascade" }),
+  deberId: uuid("deber_id")
+    .notNull()
+    .references(() => deberes.id, { onDelete: "cascade" }),
+  participanteId: uuid("participante_id")
+    .notNull()
+    .references(() => participantes.id, { onDelete: "cascade" }),
+  // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+  diaSemana: integer("dia_semana").notNull(),
+  creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// asignaciones — la realidad del día. Se genera copiando del plan_semanal.
 // ─────────────────────────────────────────────────────────────────────────────
 export const asignaciones = pgTable("asignaciones", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -328,6 +354,10 @@ export const participantesRelations = relations(
 
 export const deberesRelations = relations(deberes, ({ one, many }) => ({
   hogar: one(hogar, { fields: [deberes.hogarId], references: [hogar.id] }),
+  asignadoA: one(participantes, {
+    fields: [deberes.asignadoA],
+    references: [participantes.id],
+  }),
   criterios: many(criteriosDeber),
   asignaciones: many(asignaciones),
   registros: many(registros),

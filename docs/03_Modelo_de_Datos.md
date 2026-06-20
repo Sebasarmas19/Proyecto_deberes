@@ -42,7 +42,7 @@ La configuración global del hogar y la raíz de todo.
 | hora_cierre_dia | time | default `'03:00'` — el día cuenta hasta esta hora |
 | bono_ayuda | numeric | puntos extra al cubrir a otro (default 5) |
 | penalizacion_fallo | numeric | se resta al fallar sin razón (default 15) |
-| penalizacion_colectiva | numeric | se resta a los tres si un no negociable no lo hace nadie (default 10) |
+| penalizacion_colectiva | numeric | se resta a los tres si un obligatorio no lo hace nadie (default 10) |
 | creado_en | timestamptz | default now() |
 
 ### `participantes`
@@ -69,7 +69,7 @@ Los deberes, totalmente configurables por el admin. Dos ejes independientes: `ti
 | hogar_id | uuid | FK → hogar |
 | nombre | text | |
 | tipo_asignacion | text | `'rotativo'` \| `'reclamable'` |
-| es_obligatorio | boolean | no negociable: hay penalización si nadie lo hace |
+| es_obligatorio | boolean | obligatorio: hay penalización si nadie lo hace |
 | es_personal | boolean | cada quien hace el suyo (ej. cuarto, clóset) vs comunitario |
 | puntos | numeric | soporta decimales (ej. 2.5) |
 | cadencia | text | `'diaria'` \| `'dia_por_medio'` \| `'semanal'` \| `'mensual'`. Para reclamables indica el período de reinicio del cupo (`'semanal'` o `'mensual'`) |
@@ -201,7 +201,7 @@ El campo `transacciones_puntos.tipo` codifica cada evento. El motor traduce así
 
 | tipo | Cantidad | Rankings que afecta |
 |------|----------|--------------------|
-| `cumplimiento` | + puntos del deber (10 los no negociables) | General, Confiable |
+| `cumplimiento` | + puntos del deber (10 los obligatorios) | General, Confiable |
 | `bono_ayuda` | + puntos del deber + `bono_ayuda` | General, Solidario |
 | `reclamable` | + puntos del deber | General, Responsable |
 | `penalizacion` | − `penalizacion_fallo` | General, Confiable |

@@ -6,11 +6,12 @@ import {
   listarDeberes as listarDeberesRepo,
   obtenerDeber,
 } from "./deberes.repo";
+import { reemplazarCriterios } from "./criterios.repo";
 
 /**
  * Logica de negocio de deberes. Un deber tiene dos ejes independientes:
  *  - tipo_asignacion: como se reparte  ('rotativo' | 'reclamable')
- *  - es_obligatorio:  que tan critico es (no negociable o no)
+ *  - es_obligatorio:  que tan critico es (obligatorio o no)
  * Ambos los configura libremente el admin.
  */
 
@@ -50,6 +51,10 @@ export type CrearDeberInput = {
   // Cupo total de reclamos por periodo (solo reclamables). Null = sin limite.
   maxReclamos?: number | null;
   requiereFoto?: boolean;
+  asignadoA?: string | null;
+  limitePorPersona?: boolean;
+  // Lista de descripciones de los criterios
+  criterios?: string[];
 };
 
 export type EditarDeberInput = Partial<CrearDeberInput>;
@@ -142,7 +147,7 @@ export async function crearDeber(input: CrearDeberInput): Promise<Deber> {
 
   const hogarId = await obtenerHogarActualId();
 
-  return insertarDeber({
+  const deber = await insertarDeber({
     hogarId,
     nombre,
     tipoAsignacion: input.tipoAsignacion,
@@ -153,7 +158,19 @@ export async function crearDeber(input: CrearDeberInput): Promise<Deber> {
     diasDisponibles,
     maxReclamos,
     requiereFoto: input.requiereFoto ?? false,
+    asignadoA: input.asignadoA ?? null,
+    limitePorPersona: input.limitePorPersona ?? false,
   });
+
+  if (input.criterios) {
+    const nuevosCriterios = input.criterios.map((desc, idx) => ({
+      descripcion: desc,
+      orden: idx,
+    }));
+    await reemplazarCriterios(deber.id, nuevosCriterios);
+  }
+
+  return deber;
 }
 
 /** Edita un deber existente. Solo toca los campos que se envien. */
@@ -174,6 +191,8 @@ export async function editarDeber(
     diasDisponibles: string[];
     maxReclamos: number | null;
     requiereFoto: boolean;
+    asignadoA: string | null;
+    limitePorPersona: boolean;
   }> = {};
 
   if (input.nombre !== undefined) cambios.nombre = validarNombre(input.nombre);
@@ -193,17 +212,34 @@ export async function editarDeber(
     cambios.diasDisponibles = validarDiasDisponibles(input.diasDisponibles);
   }
   if (input.maxReclamos !== undefined) {
-    // El cupo se valida contra el tipo efectivo: el que se este enviando o,
-    // si no se cambia, el que ya tenia el deber.
-    const tipoEfectivo = input.tipoAsignacion ?? existente.tipoAsignacion;
-    cambios.maxReclamos = validarMaxReclamos(input.maxReclamos, tipoEfectivo);
+    cambios.maxReclamos = validarMaxReclamos(
+      input.maxReclamos,
+      input.tipoAsignacion ??
+        (existente.tipoAsignacion as unknown as TipoAsignacion),
+    );
   }
   if (input.esObligatorio !== undefined) cambios.esObligatorio = input.esObligatorio;
   if (input.esPersonal !== undefined) cambios.esPersonal = input.esPersonal;
-  if (input.requiereFoto !== undefined) cambios.requiereFoto = input.requiereFoto;
+  if (input.requiereFoto !== undefined)
+    cambios.requiereFoto = input.requiereFoto;
+  if (input.asignadoA !== undefined) {
+    cambios.asignadoA = input.asignadoA;
+  }
+  if (input.limitePorPersona !== undefined) {
+    cambios.limitePorPersona = input.limitePorPersona;
+  }
 
   const actualizado = await actualizarDeber(id, cambios);
   if (!actualizado) throw new Error("No se pudo actualizar el deber.");
+
+  if (input.criterios !== undefined) {
+    const nuevosCriterios = input.criterios.map((desc, idx) => ({
+      descripcion: desc,
+      orden: idx,
+    }));
+    await reemplazarCriterios(id, nuevosCriterios);
+  }
+
   return actualizado;
 }
 

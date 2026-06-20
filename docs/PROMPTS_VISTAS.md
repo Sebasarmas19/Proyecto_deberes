@@ -46,7 +46,7 @@ La vista tiene estas secciones de arriba a abajo:
 
 1. Header: fecha de hoy y saludo con el nombre del usuario
 
-2. Tarjeta HERO: el deber no negociable que le toca hoy 
+2. Tarjeta HERO: el deber obligatorio que le toca hoy 
    (ej: Cocinar), con su ícono y los puntos que vale. 
    Debajo, los criterios de aceptación solo como lista 
    de referencia (NO son checkboxes interactivos, 

@@ -40,7 +40,7 @@ export async function crearAusenciaAction(
       fechaFin: requerir(formData, "fechaFin"),
       motivo: formData.get("motivo") ? String(formData.get("motivo")) : null,
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(ausencia);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -60,7 +60,7 @@ export async function aprobarAusenciaAction(
       accion: "aprobar_ausencia",
       detalle: { ausenciaId, participanteId: ausencia.participanteId },
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(ausencia);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -80,7 +80,7 @@ export async function eliminarAusenciaAction(
       accion: "eliminar_ausencia",
       detalle: { ausenciaId },
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(null);
   } catch (e) {
     return fallo(mensajeDeError(e));

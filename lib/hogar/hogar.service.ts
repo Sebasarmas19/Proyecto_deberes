@@ -12,6 +12,7 @@ import {
 /** Datos que el admin proporciona para crear el hogar. */
 export type CrearHogarInput = {
   nombre: string;
+  claveAdmin: string;
 };
 
 /**
@@ -53,5 +54,5 @@ export async function crearHogar(input: CrearHogarInput): Promise<Hogar> {
     throw new Error("Ya existe un hogar. Esta app maneja un solo hogar.");
   }
 
-  return insertarHogar({ nombre });
+  return insertarHogar({ nombre, claveAdmin: input.claveAdmin });
 }

@@ -56,7 +56,7 @@ export async function ajustarPuntosAction(
       detalle: { participanteId, cantidad, motivo },
     });
 
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(transaccion);
   } catch (e) {
     return fallo(mensajeDeError(e));

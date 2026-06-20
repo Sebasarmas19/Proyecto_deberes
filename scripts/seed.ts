@@ -24,6 +24,7 @@ async function main() {
       nombre: "Familia Armas",
       zonaHoraria: "America/Caracas",
       horaCierreDia: "03:00",
+      claveAdmin: "1234",
     })
     .returning();
   

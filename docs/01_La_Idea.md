@@ -15,7 +15,7 @@ puntos. No está cableada para un caso específico.
 
 **Ejemplo concreto (caso de uso):** Samuel (24) y sus dos hermanos comparten 
 casa en Caracas. Tienen 3 deberes principales que rotan (Sofi el perro, 
-cocinar, lavar platos), extras reclamables de la semana, y opcionales personales 
+cocinar, lavar platos), extras de la semana, y extras personales 
 (cuarto, clóset). Esta app es lo que usan para organizarse sin peleas.
 
 ## 1. Para qué existe
@@ -31,9 +31,11 @@ Esta página web resuelve eso. Hace cuatro cosas:
 
 ---
 
-## 2. Cómo funciona, en pocas palabras
+## 3. La dinámica (Plan Semanal)
 
-Los tres deberes prinscipales rotan entre los tres hermanos, de modo que cada quien pasa por los tres en un ciclo de tres días. La rotación se calcula sola: nadie tiene que asignar nada a mano.
+El administrador configura un **Plan Semanal** (plantilla) donde asigna qué deber obligatorio le toca a cada hermano cada día, buscando la mayor justicia posible y adaptándose a las rutinas reales de la casa (por ejemplo, si alguien trabaja de noche, no se le asigna cocinar).
+
+Este plan es fijo y predecible. Cada semana, el sistema simplemente repite esta misma plantilla, garantizando la paz mental. Si las rutinas cambian, el administrador puede editar la plantilla.
 
 | Día | Hermano A | Hermano B | Hermano C |
 |-----|-----------|-----------|-----------|
@@ -48,16 +50,16 @@ Cada **domingo** confirmamos el plan de la semana, ajustado para que sea justo s
 
 ## 3. Los deberes
 
-### Deberes no negociables (todos los días, rotativos)
+### deberes obligatorios (todos los días, rotativos)
 Estos **tienen que cumplirse sea como sea**: Sofi, cocinar y platos. Valen **10 puntos** cada uno. Se marcan con un simple check (confianza, sin foto).
 
-### Extras reclamables de la semana
+### extras de la semana
 Nadie los tiene asignados: el que quiera los hace y se gana los puntos. Requieren foto de prueba. El admin define, por cada extra, **en qué días aparece** (toda la semana, fin de semana o días específicos) y **cuántas veces se puede reclamar en total** durante el período (semanal o mensual). El cupo es del hogar: varios pueden reclamar el mismo extra en días distintos hasta agotarlo.
 - **Lavar ropa** (3 tandas) → 15 puntos (hasta 3 reclamos por semana)
 - **Limpieza profunda** → 20 puntos
 - **Bañar a Sofi** → 20 puntos (disponible cualquier día, máximo 1 reclamo al mes)
 
-### Opcionales personales (día por medio, toda la semana)
+### extras personales (día por medio, toda la semana)
 Cada quien cuida lo suyo. Requieren foto de prueba.
 - **Cuarto ordenado** → 2.5 puntos
 - **Clóset ordenado** → 2.5 puntos
@@ -72,11 +74,11 @@ El puntaje es el hilo que une todo. La idea central: **ayudar al otro paga más 
 
 | Evento | Puntos |
 |--------|--------|
-| Cumplir tu deber no negociable | +10 |
+| Cumplir tu deber obligatorio | +10 |
 | Cubrir el deber de otro (con el tuyo hecho y el ayudado confirma) | +15 |
 | Cubrir sin haber hecho el tuyo | 0 (no cuenta) |
 | Fallar tu deber sin razón válida | −15 |
-| Un no negociable que no hizo nadie | −10 a los tres |
+| Un obligatorio que no hizo nadie | −10 a los tres |
 | Ausencia con razón válida | 0, no aplica |
 | Lavar ropa (3 tandas) | +15 |
 | Limpieza profunda | +20 |
@@ -106,7 +108,7 @@ Hay dos tipos:
 - **Títulos del mes:** los ganadores de los cuatro rankings. Competitivos, uno por categoría, se reinician cada mes.
 - **Medallas coleccionables:** se desbloquean al cumplir una condición y se quedan **para siempre** en tu perfil, con la fecha y el tema del logro. Varios hermanos pueden tener la misma. Tienen niveles (bronce, plata, oro). Ejemplos:
   - *Constancia:* "Imparable" (7/15/30 días seguidos sin fallar), "Mes perfecto".
-  - *Solidaridad:* "Buen hermano", "Salvador" (rescataste un no negociable que iba a quedar sin hacer).
+  - *Solidaridad:* "Buen hermano", "Salvador" (rescataste un obligatorio que iba a quedar sin hacer).
   - *Orden y extras:* "Manos a la obra", "Finde productivo".
   - *Sofi:* "El consentido de Sofi".
 
@@ -126,7 +128,7 @@ Si agregamos la página a la pantalla de inicio del teléfono, puede mandar **no
 
 ## 8. El administrador
 
-Hay un modo admin al que se entra con usuario y contraseña. El admin puede:
+Hay un modo admin al que se entra con una contraseña maestra. **El perfil administrador no es una persona específica ni un participante del hogar.** Cualquier participante que conozca la contraseña maestra de la casa puede entrar a este modo. El admin puede:
 
 - Crear y editar el plan de la semana desde la página (no a nivel de código, para que siempre se pueda ajustar).
 - Editar, añadir o eliminar deberes adicionales, y configurar la **disponibilidad** (días en que aparecen) y los **cupos** de los extras (cuántas veces se reclaman en total y si el período es semanal o mensual).
@@ -139,12 +141,12 @@ Hay un modo admin al que se entra con usuario y contraseña. El admin puede:
 
 ---
 
-## 9. El ritual del domingo
+## 10. El ritual del domingo
 
 Cada domingo se confirma el plan de la semana: se ajusta a los horarios de cada quien para que sea lo más justo posible, se declaran las ausencias conocidas y se revisa la configuración de los extras de la semana. Si pasa algo imprevisto en la semana, el admin edita la excepción.
 
 ---
 
-## 10. Lo que sigue
+## 11. Lo que sigue
 
 Con esto la idea queda completamente planteada. El siguiente paso es la conversación de **cómo lo construimos a nivel de sistema** (la parte técnica): dónde se guarda el registro compartido, cómo se ven las pantallas, cómo se manejan las notificaciones, etc.

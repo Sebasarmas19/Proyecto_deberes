@@ -20,18 +20,37 @@ import { crearHogar } from "./hogar.service";
  * TODO(auth): añadir verificacion de admin cuando se implemente la autenticacion.
  */
 
-export async function crearHogarAction(
+export async function setupInicialAction(
   formData: FormData,
-): Promise<Resultado<Hogar>> {
+): Promise<Resultado<void>> {
   try {
-    const nombre = String(formData.get("nombre") ?? "");
-    const hogar = await crearHogar({ nombre });
+    const data = {
+      nombre: String(formData.get("nombre") ?? ""),
+      zonaHoraria: String(formData.get("zonaHoraria") ?? "America/Caracas"),
+      horaCierreDia: String(formData.get("horaCierreDia") ?? "03:00"),
+      bonoAyuda: String(formData.get("bonoAyuda") ?? "5"),
+      penalizacionFallo: String(formData.get("penalizacionFallo") ?? "15"),
+      penalizacionColectiva: String(formData.get("penalizacionColectiva") ?? "10"),
+      claveAdmin: String(formData.get("claveAdmin") ?? ""),
+      // Nombres de participantes, separados por coma
+      nombresParticipantes: String(formData.get("participantes") ?? "")
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n.length > 0),
+    };
 
-    // Refresca las pantallas que dependen del hogar. Se afinara cuando existan
-    // las rutas concretas del panel de admin.
-    revalidatePath("/");
+    if (!data.nombre || !data.claveAdmin) {
+      throw new Error("El nombre y la contraseña son obligatorios.");
+    }
 
-    return exito(hogar);
+    // Importamos dinámicamente para no ensuciar la importación principal
+    const { setupInicialHogar } = await import("./setup.service");
+    await setupInicialHogar(data);
+
+    // Refrescar toda la app porque cambió el estado global
+    revalidatePath("/", "layout");
+
+    return exito(undefined);
   } catch (e) {
     return fallo(mensajeDeError(e));
   }

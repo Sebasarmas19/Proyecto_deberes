@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { deberes } from "@/lib/db/schema";
+import { deberes, criteriosDeber } from "@/lib/db/schema";
 
 /**
  * Acceso a datos de deberes. Solo consultas a la base de datos.
@@ -9,20 +9,29 @@ import { deberes } from "@/lib/db/schema";
 export type Deber = typeof deberes.$inferSelect;
 export type NuevoDeber = typeof deberes.$inferInsert;
 
+export type DeberConCriterios = Deber & {
+  criterios: (typeof criteriosDeber.$inferSelect)[];
+};
+
 /**
- * Lista los deberes de un hogar. Por defecto solo los activos; pasar
- * `incluirInactivos` para traerlos todos.
+ * Lista los deberes de un hogar, incluyendo sus criterios. Por defecto solo los activos;
+ * pasar `incluirInactivos` para traerlos todos.
  */
 export async function listarDeberes(
   hogarId: string,
   opciones?: { incluirInactivos?: boolean },
-): Promise<Deber[]> {
+): Promise<DeberConCriterios[]> {
   const filtro = opciones?.incluirInactivos
     ? eq(deberes.hogarId, hogarId)
     : and(eq(deberes.hogarId, hogarId), eq(deberes.activo, true));
 
   return db.query.deberes.findMany({
     where: filtro,
+    with: {
+      criterios: {
+        orderBy: (c, { asc }) => [asc(c.orden)],
+      },
+    },
     orderBy: (d, { asc }) => [asc(d.nombre)],
   });
 }

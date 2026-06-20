@@ -1,41 +1,26 @@
-import { HomeScreen } from "./_components/home-screen";
-import { getHomeScreenData } from "../lib/home/home.service";
+import { ProfileSelector } from "./_components/profile-selector";
+import { LandingPage } from "./_components/landing-page";
+import { getProfilePageData } from "../lib/home/profile.service";
 
 /**
- * Vista principal de la app.
+ * Página raíz — decide qué mostrar según el estado de la app:
  *
- * Ahora está conectada directamente a la base de datos a través de home.service.ts.
- * Para probar diferentes vistas de usuarios, puedes pasar el parámetro ?usuario=Nombre
- * en la URL. Por ejemplo:
- * - /?usuario=Samuel
- * - /?usuario=Silvana
- * - /?usuario=Sebastián
+ * - Si NO hay hogar configurado → Landing page informativa con botón "Comenzar"
+ *   (primera vez que alguien abre la app).
+ * - Si YA hay hogar y usuarios → Selector de perfiles (elegir quién eres).
  */
+export default async function Home() {
+  const data = await getProfilePageData();
 
-type Props = {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-export default async function Home({ searchParams }: Props) {
-  // En Next.js 15+ searchParams es una promesa.
-  const resolvedParams = await searchParams;
-  
-  // Extraemos el parámetro ?usuario=...
-  const usuarioParam = typeof resolvedParams.usuario === "string" ? resolvedParams.usuario : undefined;
-
-  // Obtenemos todos los datos de la base de datos
-  const data = await getHomeScreenData(usuarioParam);
+  if (data.estado === "sin_hogar") {
+    return <LandingPage />;
+  }
 
   return (
-    <HomeScreen
-      variant="plain"
-      userName={data.userName}
-      dateLabel={data.dateLabel}
-      deberesHoy={data.deberesHoy}
-      hermanos={data.hermanos}
-      extras={data.extras}
-      puntosBase={data.puntosBase}
-      posicionLabel={data.posicionLabel}
+    <ProfileSelector
+      estado="con_usuarios"
+      nombreHogar={data.nombreHogar}
+      participantes={data.participantes}
     />
   );
 }

@@ -33,7 +33,7 @@ export async function crearParticipanteAction(
       fotoUrl: formData.get("fotoUrl") ? String(formData.get("fotoUrl")) : null,
       esAdmin: formData.get("esAdmin") === "on",
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(participante);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -52,7 +52,7 @@ export async function editarParticipanteAction(
       fotoUrl: formData.get("fotoUrl") ? String(formData.get("fotoUrl")) : null,
       esAdmin: formData.get("esAdmin") === "on",
     });
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(participante);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -66,7 +66,7 @@ export async function desactivarParticipanteAction(
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del participante.");
     const participante = await desactivarParticipante(id);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(participante);
   } catch (e) {
     return fallo(mensajeDeError(e));
@@ -80,7 +80,7 @@ export async function reactivarParticipanteAction(
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del participante.");
     const participante = await reactivarParticipante(id);
-    revalidatePath("/");
+    revalidatePath("/", "layout");
     return exito(participante);
   } catch (e) {
     return fallo(mensajeDeError(e));

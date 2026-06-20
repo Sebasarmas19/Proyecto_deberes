@@ -102,12 +102,28 @@ button {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Entrada escalonada: cada grupo aparece con un delay progresivo. */
+.animate-rise {
+  animation: riseIn 0.5s ease both;
+}
+
+.animate-rise-delay-1 {
+  animation: riseIn 0.5s ease 0.12s both;
+}
+
+.animate-rise-delay-2 {
+  animation: riseIn 0.5s ease 0.24s both;
+}
+
 /* Respeta a quien prefiere menos movimiento (accesibilidad). */
 @media (prefers-reduced-motion: reduce) {
   .animate-pop,
   .animate-pop-lg,
   .animate-fade-in,
-  .animate-slide-up {
+  .animate-slide-up,
+  .animate-rise,
+  .animate-rise-delay-1,
+  .animate-rise-delay-2 {
     animation: none;
   }
   * {
