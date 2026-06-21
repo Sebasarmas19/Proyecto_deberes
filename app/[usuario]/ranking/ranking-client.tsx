@@ -70,7 +70,16 @@ export function RankingClient({ rankings }: Props) {
           {/* Segundo lugar (Izquierda) */}
           {p2 ? (
             <div className="flex-1 flex flex-col items-center max-w-[120px]">
-              <span className="text-2xl mb-1">🥈</span>
+              <div className="relative mb-1.5">
+                <div className="size-[42px] rounded-full bg-white flex items-center justify-center text-lg font-bold border-2 border-[#e6d9c4] overflow-hidden shadow-sm">
+                  {p2.fotoUrl ? (
+                    <img src={p2.fotoUrl} alt={p2.nombre} className="size-full object-cover" />
+                  ) : (
+                    p2.nombre.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="absolute -top-2 -right-2 text-xl drop-shadow-sm">🥈</div>
+              </div>
               <div className="text-center font-bold text-[13px] text-tinta truncate w-full">
                 {p2.nombre}
               </div>
@@ -90,7 +99,16 @@ export function RankingClient({ rankings }: Props) {
           {/* Primer lugar (Centro) */}
           {p1 ? (
             <div className="flex-1 flex flex-col items-center max-w-[120px]">
-              <span className="text-3xl mb-0.5 animate-bounce">👑</span>
+              <div className="relative mb-1.5">
+                <div className="size-[54px] rounded-full bg-white flex items-center justify-center text-xl font-bold border-[3px] border-[#f6d582] overflow-hidden shadow-md">
+                  {p1.fotoUrl ? (
+                    <img src={p1.fotoUrl} alt={p1.nombre} className="size-full object-cover" />
+                  ) : (
+                    p1.nombre.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="absolute -top-3 -right-3 text-3xl animate-bounce drop-shadow-sm">👑</div>
+              </div>
               <div className="text-center font-bold text-[14px] text-tinta truncate w-full">
                 {p1.nombre}
               </div>
@@ -110,7 +128,16 @@ export function RankingClient({ rankings }: Props) {
           {/* Tercer lugar (Derecha) */}
           {p3 ? (
             <div className="flex-1 flex flex-col items-center max-w-[120px]">
-              <span className="text-2xl mb-1">🥉</span>
+              <div className="relative mb-1.5">
+                <div className="size-[42px] rounded-full bg-white flex items-center justify-center text-lg font-bold border-2 border-[#edc09a] overflow-hidden shadow-sm">
+                  {p3.fotoUrl ? (
+                    <img src={p3.fotoUrl} alt={p3.nombre} className="size-full object-cover" />
+                  ) : (
+                    p3.nombre.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="absolute -top-2 -right-2 text-xl drop-shadow-sm">🥉</div>
+              </div>
               <div className="text-center font-bold text-[13px] text-tinta truncate w-full">
                 {p3.nombre}
               </div>
@@ -149,6 +176,13 @@ export function RankingClient({ rankings }: Props) {
                   <span className="font-display text-[15px] font-extrabold text-[#7a6d60] w-6">
                     {row.posicion}º
                   </span>
+                  <div className="size-8 rounded-full bg-white flex flex-shrink-0 items-center justify-center text-sm font-bold border border-[#f0e6d5] overflow-hidden shadow-sm">
+                    {row.fotoUrl ? (
+                      <img src={row.fotoUrl} alt={row.nombre} className="size-full object-cover" />
+                    ) : (
+                      row.nombre.charAt(0).toUpperCase()
+                    )}
+                  </div>
                   <span className="font-bold text-[15px] text-tinta">
                     {row.nombre}
                   </span>

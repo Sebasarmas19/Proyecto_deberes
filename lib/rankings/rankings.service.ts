@@ -24,6 +24,7 @@ import {
 export type FilaRanking = {
   participanteId: string;
   nombre: string;
+  fotoUrl: string | null;
   valor: number; // puntos, o porcentaje (0-100) en el caso de "confiable"
   posicion: number; // 1 = primero. Empates comparten posición.
   detalle?: string; // texto opcional (ej. "8/10 deberes" en confiable)
@@ -104,9 +105,9 @@ export async function calcularRankings(mes?: string): Promise<Rankings> {
       .filter((t) => t.tipo === "reclamable")
       .reduce((s, t) => s + Number(t.cantidad), 0);
 
-    general.push({ participanteId: p.id, nombre: p.nombre, valor: total });
-    solidario.push({ participanteId: p.id, nombre: p.nombre, valor: puntosAyuda });
-    responsable.push({ participanteId: p.id, nombre: p.nombre, valor: puntosExtras });
+    general.push({ participanteId: p.id, nombre: p.nombre, fotoUrl: p.fotoUrl, valor: total });
+    solidario.push({ participanteId: p.id, nombre: p.nombre, fotoUrl: p.fotoUrl, valor: puntosAyuda });
+    responsable.push({ participanteId: p.id, nombre: p.nombre, fotoUrl: p.fotoUrl, valor: puntosExtras });
   }
 
   return {

@@ -39,20 +39,7 @@ export default async function PlanSemanalPage({ params }: Props) {
     { index: 0, name: "Domingo" },
   ];
 
-  function getEmojiForDeber(nombre: string): string {
-    const n = nombre.toLowerCase();
-    if (n.includes("cocina")) return "🍳";
-    if (n.includes("plato") || n.includes("lava")) {
-      if (n.includes("ropa")) return "🧺";
-      return "🍽️";
-    }
-    if (n.includes("sofi") || n.includes("perro") || n.includes("mascota"))
-      return "🐾";
-    if (n.includes("ropa")) return "🧺";
-    if (n.includes("limpie") || n.includes("profunda")) return "🧹";
-    if (n.includes("basura")) return "🗑️";
-    return "📋";
-  }
+
 
   return (
     <main className="p-4 flex flex-col gap-6">
@@ -104,13 +91,17 @@ export default async function PlanSemanalPage({ params }: Props) {
                       {/* Avatar e Identificación del Participante */}
                       <div className="flex items-center gap-2">
                         <div
-                          className={`size-8 rounded-full flex items-center justify-center text-[12px] font-bold border ${
+                          className={`size-8 rounded-full flex flex-shrink-0 items-center justify-center text-[12px] font-bold border overflow-hidden shadow-sm ${
                             isMe
                               ? "bg-[#fcebb6] border-[#f6d582] text-[#a88430]"
                               : "bg-[#fbf3e4] border-[#dccdb4] text-tinta"
                           }`}
                         >
-                          {part.nombre.charAt(0).toUpperCase()}
+                          {part.fotoUrl ? (
+                            <img src={part.fotoUrl} alt={part.nombre} className="size-full object-cover" />
+                          ) : (
+                            part.nombre.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <span
                           className={`text-[15px] ${
@@ -129,7 +120,7 @@ export default async function PlanSemanalPage({ params }: Props) {
                               key={chore.id}
                               className="text-[12px] font-bold text-[#38302a] bg-[#faf5eb] border border-[#e6d9c4] px-2.5 py-1 rounded-xl flex items-center gap-1 shadow-sm"
                             >
-                              <span>{getEmojiForDeber(chore.nombre)}</span>
+                              <span>{chore.icono || "✨"}</span>
                               <span>{chore.nombre}</span>
                             </span>
                           ))
