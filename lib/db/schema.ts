@@ -90,6 +90,7 @@ export const deberes = pgTable("deberes", {
     .notNull()
     .references(() => hogar.id, { onDelete: "cascade" }),
   nombre: text("nombre").notNull(),
+  icono: text("icono").notNull().default("✨"),
   tipoAsignacion: text("tipo_asignacion", {
     enum: ["rotativo", "reclamable"],
   }).notNull(),

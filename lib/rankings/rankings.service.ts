@@ -15,12 +15,9 @@ import {
  * `transacciones_puntos`, `registros` y `asignaciones`: no hay puntajes
  * guardados que mantener, así que nunca se desincronizan.
  *
- * Los cuatro rankings (fijos, el admin no los cambia):
  *  1. General      — total de puntos acumulados.
- *  2. Confiable    — % de deberes propios cumplidos sobre los que te tocaban
- *                    los días que estuviste presente (las ausencias no cuentan).
- *  3. Solidario    — puntos ganados ayudando (transacciones tipo bono_ayuda).
- *  4. Responsable  — puntos en extras reclamables (transacciones tipo reclamable).
+ *  2. Solidario    — puntos ganados ayudando (transacciones tipo bono_ayuda).
+ *  3. Responsable  — puntos en extras reclamables (transacciones tipo reclamable).
  */
 
 /** Una fila de un ranking, ya con su posición calculada. */
@@ -32,10 +29,8 @@ export type FilaRanking = {
   detalle?: string; // texto opcional (ej. "8/10 deberes" en confiable)
 };
 
-export type Rankings = {
   mes: string; // 'YYYY-MM'
   general: FilaRanking[];
-  confiable: FilaRanking[];
   solidario: FilaRanking[];
   responsable: FilaRanking[];
 };
@@ -70,10 +65,6 @@ export async function calcularRankings(mes?: string): Promise<Rankings> {
   const { inicio, fin } = rangoPeriodo("mensual", fechaRef);
   const mesStr = inicio.slice(0, 7);
 
-  // "Confiable" solo cuenta los deberes hasta HOY: los días futuros del mes aún
-  // no ocurrieron, así que no deben inflar el denominador.
-  const hoyStr = formatearFechaISO(obtenerFechaDeNegocio());
-
   const participantes = await listarParticipantesActivos(hogarId);
   const ids = participantes.map((p) => p.id);
 
@@ -94,7 +85,6 @@ export async function calcularRankings(mes?: string): Promise<Rankings> {
     );
 
   const general: Omit<FilaRanking, "posicion">[] = [];
-  const confiable: Omit<FilaRanking, "posicion">[] = [];
   const solidario: Omit<FilaRanking, "posicion">[] = [];
   const responsable: Omit<FilaRanking, "posicion">[] = [];
 
@@ -114,43 +104,21 @@ export async function calcularRankings(mes?: string): Promise<Rankings> {
       .filter((t) => t.tipo === "reclamable")
       .reduce((s, t) => s + Number(t.cantidad), 0);
 
-    // Confiable: cumplidos propios ÷ deberes que le tocaban estando presente.
-    const cumplidos = registros.filter(
-      (r) => r.participanteId === p.id && r.estado === "cumplido_propio",
-    ).length;
-    const esperados = asignaciones.filter(
-      (a) =>
-        a.participanteId === p.id &&
-        a.fecha <= hoyStr &&
-        !estabaAusente(p.id, a.fecha),
-    ).length;
-    const porcentaje =
-      esperados > 0 ? Math.min(100, Math.round((cumplidos / esperados) * 100)) : 0;
-
     general.push({ participanteId: p.id, nombre: p.nombre, valor: total });
     solidario.push({ participanteId: p.id, nombre: p.nombre, valor: puntosAyuda });
     responsable.push({ participanteId: p.id, nombre: p.nombre, valor: puntosExtras });
-    confiable.push({
-      participanteId: p.id,
-      nombre: p.nombre,
-      valor: porcentaje,
-      detalle: `${cumplidos}/${esperados} deberes`,
-    });
   }
 
   return {
     mes: mesStr,
     general: clasificar(general),
-    confiable: clasificar(confiable),
     solidario: clasificar(solidario),
     responsable: clasificar(responsable),
   };
 }
 
-/** Las cuatro posiciones de un participante (útil para su perfil / la home). */
 export type PosicionesParticipante = {
   general: number;
-  confiable: number;
   solidario: number;
   responsable: number;
 };
@@ -164,7 +132,6 @@ export async function obtenerPosiciones(
     filas.find((f) => f.participanteId === participanteId)?.posicion ?? 0;
   return {
     general: buscar(r.general),
-    confiable: buscar(r.confiable),
     solidario: buscar(r.solidario),
     responsable: buscar(r.responsable),
   };

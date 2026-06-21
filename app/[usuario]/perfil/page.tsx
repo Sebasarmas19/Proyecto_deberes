@@ -9,6 +9,7 @@ import { db } from "@/lib/db";
 import { titulosMes } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { CATALOGO_LOGROS } from "@/lib/logros/catalogo";
+import { AvatarClient } from "./avatar-client";
 
 type Props = {
   params: Promise<{ usuario: string }>;
@@ -112,22 +113,12 @@ export default async function PerfilPage({ params }: Props) {
       >
         {/* Avatar */}
         <div className="relative">
-          <div
-            className={`size-20 rounded-full bg-white flex items-center justify-center text-3xl font-bold border-4 ${avatarBorder} overflow-hidden shadow-sm`}
-          >
-            {yo.fotoUrl ? (
-              <img
-                src={yo.fotoUrl}
-                alt={yo.nombre}
-                className="size-full object-cover"
-              />
-            ) : (
-              yo.nombre.charAt(0).toUpperCase()
-            )}
-          </div>
-          <div className="absolute -bottom-1 -right-1 bg-white text-[14px] rounded-full size-6 flex items-center justify-center shadow border border-[#faf5eb]">
-            🌟
-          </div>
+          <AvatarClient
+            participanteId={yo.id}
+            nombre={yo.nombre}
+            fotoUrl={yo.fotoUrl}
+            borderColorClass={avatarBorder}
+          />
         </div>
 
         {/* Nombre y Rol */}
@@ -149,19 +140,20 @@ export default async function PerfilPage({ params }: Props) {
         <div className="grid grid-cols-2 gap-3">
           {[
             { label: "General", val: posiciones.general, emoji: "🏆" },
-            { label: "Confiable", val: posiciones.confiable, emoji: "✅" },
             { label: "Solidario", val: posiciones.solidario, emoji: "🤝" },
             { label: "Responsable", val: posiciones.responsable, emoji: "🌟" },
           ].map((item) => (
             <div
               key={item.label}
-              className="bg-crema-card border border-[#f0e6d5] rounded-2xl p-4 shadow-sm flex flex-col gap-1.5"
+              className="bg-[#faf5eb] border border-[#f0e6d5] rounded-[18px] p-[14px] flex items-center justify-between shadow-sm transition-all hover:bg-[#fffdf9]"
             >
-              <div className="flex items-center gap-1.5 text-[#a0907c] text-[13px] font-bold">
-                <span>{item.emoji}</span>
-                <span>{item.label}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[18px]" aria-hidden="true">{item.emoji}</span>
+                <span className="text-[13px] font-bold text-[#7a6d60] leading-none">
+                  {item.label}
+                </span>
               </div>
-              <span className="font-display text-[24px] font-extrabold text-tinta">
+              <span className="font-display text-[18px] font-extrabold text-tinta leading-none">
                 {renderPosicion(item.val)}
               </span>
             </div>

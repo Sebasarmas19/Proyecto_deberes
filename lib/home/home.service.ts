@@ -88,36 +88,59 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
     Silvana: { card: "background:#FFFDF9;border:1px solid #F0E6D5;", ring: "background:#EFE0D0;border:2px solid #DFC9AE;" },
   };
 
+  const misPersonalesList: any[] = [];
+
   // 6. Construir lista de hermanos y extraer mis deberes
   for (const part of participantesActivos) {
     const esYo = part.id === yo.id;
     
-    // Ojo: iteramos sobre TODAS las asignaciones (rotativo, personal, etc)
     const misAsignaciones = Array.from(deberesAgrupados.values()).filter((a) => a.asignacion.participanteId === part.id && a.deber.tipoAsignacion === "rotativo");
+    const misRotativos = misAsignaciones.filter(a => !a.deber.esPersonal);
+    const misPersonales = misAsignaciones.filter(a => a.deber.esPersonal);
     
     // Asumimos que la primera o la más pesada es la principal para mostrar a los hermanos
-    const asignacionPrincipal = misAsignaciones[0];
-    const estaCumplido = deberesCumplidosPor.has(part.id); // TODO: Esto asume 1 deber por persona. Necesita revisión en el futuro si hay varios.
+    const asignacionPrincipal = misRotativos[0];
+    
+    // Determinar si cumplió su deber principal
+    const estaCumplido = asignacionPrincipal ? registrosHoy.some(r => r.estado === "cumplido_propio" && r.participanteId === part.id && r.deberId === asignacionPrincipal.deber.id) : false;
 
+    // Determinar si hay alguien que cubrió este deber hacia mí
+    const coberturaHaciaMi = asignacionPrincipal
+      ? registrosHoy.find(
+          (r) =>
+            r.estado === "cubrio_a_otro" &&
+            r.cubiertoA === part.id &&
+            r.deberId === asignacionPrincipal.deber.id
+        )
+      : undefined;
+      
     // Si es "Yo", armar Mis Deberes
     if (esYo) {
-      for (const item of misAsignaciones) {
+      for (const item of misRotativos) {
         const emoji = item.deber.nombre.toLowerCase().includes("platos")
           ? "🍽️"
           : item.deber.nombre.toLowerCase().includes("cocinar")
-            ? "🍳"
-            : item.deber.nombre.toLowerCase().includes("sofi")
-              ? "🐶"
-              : "🛏️";
-
         misDeberes.push({
           id: item.deber.id,
           nombre: item.deber.nombre,
-          emoji,
+          icono: item.deber.icono || "✨",
           puntos: Number(item.deber.puntos),
           criterios: item.criterios,
           cumplido: estaCumplido, // Warning: if there are multiple chores, this boolean needs to be per chore!
+          cubiertoPor: coberturaHaciaMi
+            ? {
+                registroId: coberturaHaciaMi.id,
+                nombreId: coberturaHaciaMi.participanteId,
+                nombre:
+                  participantesActivos.find(
+                    (p) => p.id === coberturaHaciaMi.participanteId
+                  )?.nombre || "Alguien",
+              }
+            : undefined,
         });
+      }
+      for (const item of misPersonales) {
+        misPersonalesList.push(item);
       }
     }
 
@@ -132,7 +155,11 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
     const emojiHermano = part.nombre === "Sebastián" ? "🍳" : part.nombre === "Samuel" ? "🐾" : "🍽️";
 
     const estilo = estilosHermanos[part.nombre] || estilosHermanos["Sebastián"];
-    const coberturaStatus = coberturasAConfirmar.has(part.id) ? "bonus" : undefined;
+    let coberturaStatus: any = coberturasAConfirmar.has(part.id) ? "bonus" : undefined;
+    
+    if (!coberturaStatus && coberturaHaciaMi) {
+      coberturaStatus = "cubierto_por_otro";
+    }
 
     // TODO: estaCumplido assumes 1 chore! If they have multiple, we need a different check for "has completed ALL their chores".
     // For now, let's keep the existing logic for the "brother" view.
@@ -143,7 +170,8 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
       cobertura: coberturaStatus as any,
       nombre: part.nombre,
       rol: rolLabel,
-      emoji: emojiHermano,
+      emoji: asignacion?.deber.icono || "✨", // Using the chore's icon as the emoji fallback
+      fotoUrl: part.fotoUrl,
       esYo,
       cumplido: estaCumplido,
       deberId: asignacion?.deber.id || "",
@@ -191,12 +219,30 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
   const extrasFormateados: ExtraSemana[] = Array.from(extrasAgrupados.values()).map((e) => ({
     reclamadoHoy: extrasReclamadosPorMi.has(e.deber.id),
     clave: e.deber.id,
-    icono: e.deber.nombre === "Lavar ropa" ? "🧺" : "🧽", // mock
+    icono: e.deber.icono || "✨",
     label: e.deber.nombre,
-    meta: `${e.deber.puntos} pts · pide foto 📷`,
+    meta: e.deber.requiereFoto ? `${e.deber.puntos} pts · pide foto 📷` : `${e.deber.puntos} pts`,
     puntos: Number(e.deber.puntos),
     criterios: e.criterios,
+    esPersonal: false,
+    requiereFoto: e.deber.requiereFoto,
   }));
+
+  // Agregar mis personales a los extras (para que aparezcan ahí pero con botón de marcar)
+  for (const p of misPersonalesList) {
+    const estaCumplido = registrosHoy.some(r => r.estado === "cumplido_propio" && r.participanteId === yo.id && r.deberId === p.deber.id);
+    extrasFormateados.push({
+      reclamadoHoy: estaCumplido, // Si ya lo cumplió, deshabilitar
+      clave: p.deber.id,
+      icono: p.deber.icono || "✨",
+      label: p.deber.nombre,
+      meta: p.deber.requiereFoto ? `${p.deber.puntos} pts · personal · pide foto 📷` : `${p.deber.puntos} pts · personal`,
+      puntos: Number(p.deber.puntos),
+      criterios: p.criterios,
+      esPersonal: true,
+      requiereFoto: p.deber.requiereFoto,
+    });
+  }
 
   // 8. Calcular Puntos del mes y Ranking
   // Obtener primer y último día del mes actual (según fecha de negocio)

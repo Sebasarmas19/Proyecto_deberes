@@ -9,22 +9,16 @@ type Props = {
 
 export function RankingClient({ rankings }: Props) {
   const [tab, setTab] = useState<
-    "general" | "confiable" | "solidario" | "responsable"
+    "general" | "solidario" | "responsable"
   >("general");
 
   const rankData = rankings[tab] || [];
 
   const renderValue = (p: FilaRanking) => {
-    if (tab === "confiable") {
-      return `${p.valor}%`;
-    }
     return `${p.valor} pts`;
   };
 
   const renderTableValue = (p: FilaRanking) => {
-    if (tab === "confiable") {
-      return p.detalle ? `${p.valor}% — ${p.detalle}` : `${p.valor}%`;
-    }
     return `${p.valor} pts`;
   };
 
@@ -39,9 +33,9 @@ export function RankingClient({ rankings }: Props) {
       <div
         role="tablist"
         aria-label="Rankings del mes"
-        className="grid grid-cols-4 bg-[#f0e6d5] p-1 rounded-2xl gap-1"
+        className="grid grid-cols-3 bg-[#f0e6d5] p-1 rounded-2xl gap-1"
       >
-        {(["general", "confiable", "solidario", "responsable"] as const).map(
+        {(["general", "solidario", "responsable"] as const).map(
           (t) => {
             const isActive = tab === t;
             return (
@@ -66,7 +60,6 @@ export function RankingClient({ rankings }: Props) {
       {/* Explicación rápida de la pestaña seleccionada */}
       <p className="text-[12px] font-medium text-[#9a8c7c] text-center -mt-2">
         {tab === "general" && "🏆 Total de puntos acumulados en el mes"}
-        {tab === "confiable" && "✅ % de deberes cumplidos del participante"}
         {tab === "solidario" && "🤝 Puntos ganados ayudando a otros"}
         {tab === "responsable" && "🌟 Puntos acumulados en extras reclamables"}
       </p>

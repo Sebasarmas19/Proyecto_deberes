@@ -42,41 +42,53 @@ async function main() {
 
   console.log("Participantes creados:", sebastian.nombre, samuel.nombre, silvana.nombre);
 
-  // 4. Crear deberes rotativos (obligatorios)
-  const deberesRotativos = await db
+  // 4. Crear los deberes rotativos (obligatorios)
+  const [sofi, cocinar, platos] = await db
     .insert(deberes)
     .values([
       {
         hogarId: nuevoHogar.id,
-        nombre: "Cocinar",
-        tipoAsignacion: "rotativo",
-        esObligatorio: true,
-        puntos: "10",
-        cadencia: "diaria",
-        requiereFoto: false,
-      },
-      {
-        hogarId: nuevoHogar.id,
-        nombre: "Lavar los platos",
-        tipoAsignacion: "rotativo",
-        esObligatorio: true,
-        puntos: "10",
-        cadencia: "diaria",
-        requiereFoto: false,
-      },
-      {
-        hogarId: nuevoHogar.id,
         nombre: "Atender a Sofi",
+        icono: "🐾",
         tipoAsignacion: "rotativo",
         esObligatorio: true,
         puntos: "10",
         cadencia: "diaria",
-        requiereFoto: false,
+      },
+      {
+        hogarId: nuevoHogar.id,
+        nombre: "Cocinar",
+        icono: "🍳",
+        tipoAsignacion: "rotativo",
+        esObligatorio: true,
+        puntos: "10",
+        cadencia: "diaria",
+      },
+      {
+        hogarId: nuevoHogar.id,
+        nombre: "Lavar platos",
+        icono: "🍽️",
+        tipoAsignacion: "rotativo",
+        esObligatorio: true,
+        puntos: "10",
+        cadencia: "diaria",
       },
     ])
     .returning();
 
-  const [cocinar, platos, sofi] = deberesRotativos;
+  // Y algunos personales
+  await db.insert(deberes).values([
+    {
+      hogarId: nuevoHogar.id,
+      nombre: "Cama tendida",
+      icono: "🛏️",
+      tipoAsignacion: "rotativo",
+      esObligatorio: false,
+      esPersonal: true,
+      puntos: "2.5",
+      cadencia: "dia_por_medio",
+    },
+  ]);
 
   // Criterios para deberes rotativos
   await db.insert(criteriosDeber).values([
@@ -101,6 +113,7 @@ async function main() {
       {
         hogarId: nuevoHogar.id,
         nombre: "Lavar ropa",
+        icono: "🧺",
         tipoAsignacion: "reclamable",
         esObligatorio: false,
         puntos: "15",
@@ -112,6 +125,7 @@ async function main() {
       {
         hogarId: nuevoHogar.id,
         nombre: "Limpieza profunda",
+        icono: "🧽",
         tipoAsignacion: "reclamable",
         esObligatorio: false,
         puntos: "20",

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useTransition } from "react";
-import { marcarCumplidoAction, cubrirDeberAction, reclamarExtraAction } from "@/lib/cumplimiento/cumplimiento.actions";
+import { marcarCumplidoAction, cubrirDeberAction, reclamarExtraAction, confirmarCoberturaAction } from "@/lib/cumplimiento/cumplimiento.actions";
+import { supabase } from "@/lib/db/supabase";
 
 /**
  * Pantalla principal (HomeScreen) — rediseño.
@@ -27,19 +28,25 @@ export type HeroVariant = "plain" | "photo";
 export type DeberHoy = {
   id: string;
   nombre: string;
-  emoji: string;
+  icono: string;
   puntos: number;
   criterios: string[];
   cumplido: boolean;
+  cubiertoPor?: {
+    registroId: string;
+    nombreId: string;
+    nombre: string;
+  };
 };
 
 export type HermanoEstado = {
   participanteId: string;
-  cobertura?: "bonus" | "nobonus";
+  cobertura?: "bonus" | "nobonus" | "cubierto_por_otro";
   nombre: string;
   /** Etiqueta visible del rol, p. ej. "Cocina hoy" o "Tú · Sofi". */
   rol: string;
-  emoji: string;
+  emoji?: string;
+  fotoUrl: string | null;
   esYo: boolean;
   cumplido: boolean;
   /** Nombre completo del deber para el modal, p. ej. "Cocinar". */
@@ -64,7 +71,10 @@ export type ExtraSemana = {
   meta: string;
   puntos: number;
   /** Criterios de aceptación (se muestran en el modal al reclamar). */
+  /** Criterios de aceptación (se muestran en el modal al reclamar). */
   criterios: string[];
+  esPersonal?: boolean;
+  requiereFoto?: boolean;
 };
 
 export type HomeScreenProps = {
@@ -85,15 +95,16 @@ export type HomeScreenProps = {
 type EstadoCobertura = "bonus" | "nobonus";
 
 type ModalData = {
-  tipo: "cubrir" | "reclamar";
+  tipo: "cubrir" | "reclamar" | "personal";
   nombre: string;
   emoji: string;
   puntos: number;
   criterios: string[];
-  /** Índice del hermano (solo para cubrir). */
   hermanoIdx?: number;
-  /** Clave del extra (solo para reclamar). */
   extraClave?: string;
+  fotoUrl?: string;
+  nota?: string;
+  requiereFoto?: boolean;
 };
 
 // ── Componente principal ────────────────────────────────────────────────────
@@ -113,9 +124,6 @@ export function HomeScreen({
 
   // Modal para cubrir deberes o reclamar extras.
   const [modal, setModal] = useState<ModalData | null>(null);
-
-  // Sección de extras abierta/cerrada.
-  const [extrasOpen, setExtrasOpen] = useState(true);
 
   // ¿Todos mis deberes del día están cumplidos? (necesario para el bono).
   const todosMisDeberesCumplidos =
@@ -139,6 +147,17 @@ export function HomeScreen({
     alert("No se puede deshacer un deber. Si te equivocaste, avisa al admin.");
   };
 
+  const marcarExtraPersonalCumplido = (extraClave: string) => {
+    const extra = extras.find(e => e.clave === extraClave);
+    if (extra?.reclamadoHoy) return;
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.append("deberId", extraClave);
+      fd.append("participanteId", miId);
+      await marcarCumplidoAction(fd);
+    });
+  };
+
   const abrirModalCubrir = (hermanoIdx: number) => {
     const h = hermanos[hermanoIdx];
     setModal({
@@ -151,16 +170,17 @@ export function HomeScreen({
     });
   };
 
-  const abrirModalReclamar = (clave: string) => {
-    const extra = extras.find((e) => e.clave === clave);
-    if (!extra) return;
+  const abrirModalReclamar = (clave: string, esPersonal: boolean = false) => {
+    const e = extras.find((x) => x.clave === clave);
+    if (!e) return;
     setModal({
-      tipo: "reclamar",
-      nombre: extra.label,
-      emoji: extra.icono,
-      puntos: extra.puntos,
-      criterios: extra.criterios,
+      tipo: esPersonal ? "personal" : "reclamar",
+      nombre: e.label,
+      emoji: e.icono,
+      puntos: e.puntos,
+      criterios: e.criterios,
       extraClave: clave,
+      requiereFoto: e.requiereFoto,
     });
   };
 
@@ -174,16 +194,50 @@ export function HomeScreen({
         fd.append("deberId", h.deberId);
         fd.append("participanteId", miId);
         fd.append("cubiertoA", h.participanteId);
-        await cubrirDeberAction(fd);
+        if (modal.fotoUrl) fd.append("fotoUrl", modal.fotoUrl);
+        if (modal.nota) fd.append("nota", modal.nota);
+        
+        const res = await cubrirDeberAction(fd);
+        if (!res.ok) {
+          alert("Error: " + res.error);
+          return;
+        }
       } else if (modal.tipo === "reclamar" && modal.extraClave) {
         const fd = new FormData();
         fd.append("deberId", modal.extraClave);
         fd.append("participanteId", miId);
-        fd.append("fotoUrl", "https://picsum.photos/400"); // placeholder
-        await reclamarExtraAction(fd);
+        if (modal.fotoUrl) fd.append("fotoUrl", modal.fotoUrl);
+        
+        const res = await reclamarExtraAction(fd);
+        if (!res.ok) {
+          alert("Error: " + res.error);
+          return;
+        }
+      } else if (modal.tipo === "personal" && modal.extraClave) {
+        const fd = new FormData();
+        fd.append("deberId", modal.extraClave);
+        fd.append("participanteId", miId);
+        if (modal.fotoUrl) fd.append("fotoUrl", modal.fotoUrl);
+        if (modal.nota) fd.append("nota", modal.nota);
+        
+        const res = await marcarCumplidoAction(fd);
+        if (!res.ok) {
+          alert("Error: " + res.error);
+          return;
+        }
       }
       setModal(null);
     });
+  };
+
+  const confirmarCoberturaHero = async (registroId: string) => {
+    const fd = new FormData();
+    fd.append("registroId", registroId);
+    fd.append("participanteId", miId);
+    const res = await confirmarCoberturaAction(fd);
+    if (!res.ok) {
+      alert("Error: " + res.error);
+    }
   };
 
   // ── Puntaje derivado del estado ─────────────────────────────────────────
@@ -226,10 +280,11 @@ export function HomeScreen({
         ) : (
           deberesHoy.map((deber, idx) => (
             <DeberPropioCard
-              key={idx}
+              key={deber.id}
               variant={variant}
               deber={deber}
               cumplido={deber.cumplido}
+              isSubmitting={isPending}
               onMarcar={() => marcarCumplido(idx)}
               onDeshacer={() => deshacerCumplido(idx)}
               className={idx > 0 ? "mt-3.5" : ""}
@@ -264,17 +319,27 @@ export function HomeScreen({
                   style={parseStyle(h.cardStyle)}
                 >
                   {h.esYo && (
-                    <span className="absolute right-[9px] top-[9px] rounded-[20px] bg-terracota px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.06em] text-white">
-                      TÚ
-                    </span>
-                  )}
-                  <span
-                    aria-hidden="true"
-                    className="mx-auto flex size-[46px] items-center justify-center rounded-full text-[23px]"
-                    style={parseStyle(h.ringStyle)}
-                  >
-                    {h.emoji}
-                  </span>
+                  <div className="relative">
+                    <div
+                      className="mx-auto flex size-[46px] items-center justify-center rounded-full bg-white text-[23px] font-bold text-naranja shadow-sm"
+                      style={parseStyle(h.ringStyle)}
+                    >
+                      {h.fotoUrl ? (
+                        <img
+                          src={h.fotoUrl}
+                          alt={h.nombre}
+                          className="size-full rounded-full object-cover"
+                        />
+                      ) : (
+                        h.nombre.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    {h.esYo && (
+                      <span className="absolute right-[9px] top-[9px] rounded-[20px] bg-terracota px-1.5 py-0.5 text-[9px] font-extrabold tracking-[0.06em] text-white">
+                        TÚ
+                      </span>
+                    )}
+                  </div>
                   <p className="mt-2 text-[13px] font-extrabold">{h.nombre}</p>
                   <p className="mt-px text-[10.5px] font-semibold text-[#a6927c]">
                     {h.rol}
@@ -301,11 +366,7 @@ export function HomeScreen({
                   )}
                   {cobertura === "bonus" && (
                     <p className="mt-[9px] rounded-[11px] bg-[#e3efdf] px-[5px] py-1.5 text-[10px] font-bold leading-[1.25] text-[#477a4e]">
-                      Cubierto · +15
-                      <br />
-                      <span className="font-semibold text-[#7aa17e]">
-                        por confirmar
-                      </span>
+                      Cubierto · +15 pts
                     </p>
                   )}
                   {cobertura === "nobonus" && (
@@ -315,62 +376,40 @@ export function HomeScreen({
                       el tuyo p/ el bono
                     </p>
                   )}
+                  {cobertura === "cubierto_por_otro" && (
+                    <p className="mt-[9px] rounded-[11px] bg-[#e3efdf] px-[5px] py-1.5 text-[10px] font-bold leading-[1.25] text-[#477a4e]">
+                      ¡Te cubrieron!
+                    </p>
+                  )}
                 </li>
               );
             })}
           </ul>
         </section>
 
-        {/* Extras de la semana (colapsable) */}
-        {extras.length > 0 && (
-          <section
-            aria-label="Extras de la semana"
-            className="mt-6 overflow-hidden rounded-[22px] border border-[#efe1c6] bg-crema-soft"
-          >
-            <h2>
-              <button
-                type="button"
-                onClick={() => setExtrasOpen((v) => !v)}
-                aria-expanded={extrasOpen}
-                aria-controls="extras-body"
-                className="flex w-full items-center gap-3 p-[15px_18px] text-left transition-colors hover:bg-[#f6ecd6] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#a88c5a]"
-              >
-                <span aria-hidden="true" className="text-[22px]">
-                  🎉
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-display text-[15.5px] font-extrabold tracking-[-0.01em] text-[#5a4420]">
-                    Extras de la semana
-                  </span>
-                  <span className="block text-[11.5px] font-semibold text-[#a88c5a]">
-                    Libres · reclama para sumar puntos
-                  </span>
-                </span>
-                <span
-                  aria-hidden="true"
-                  className="text-[14px] text-[#a88c5a] transition-transform duration-300"
-                  style={{
-                    transform: extrasOpen ? "rotate(180deg)" : "rotate(0deg)",
-                  }}
-                >
-                  ▾
-                </span>
-              </button>
+        {/* Extras de la semana (Plano, sin acordeón) */}
+        <section aria-label="Extras de la semana" className="mt-8">
+          <div className="flex items-baseline justify-between px-0.5 mb-3">
+            <h2 className="font-display text-[18px] font-extrabold tracking-[-0.02em]">
+              Extras de la semana
             </h2>
-            {/* Colapso animado con grid-rows (0fr ↔ 1fr). `inert` saca el
-                contenido del foco cuando está cerrado. */}
-            <div
-              id="extras-body"
-              className="grid transition-[grid-template-rows] duration-300 ease-out"
-              style={{ gridTemplateRows: extrasOpen ? "1fr" : "0fr" }}
-            >
-              <ul inert={!extrasOpen} className="overflow-hidden">
+          </div>
+
+          {extras.length === 0 ? (
+            <div className="rounded-[20px] bg-white p-5 text-center shadow-[0_4px_16px_rgb(0,0,0,0.03)] border border-[#efe1c6]">
+              <p className="text-[13.5px] font-medium text-[#b19a80]">
+                No hay extras asignados por hoy.
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-[20px] bg-white shadow-[0_4px_16px_rgb(0,0,0,0.03)] overflow-hidden">
+              <ul className="flex flex-col">
                 {extras.map((e) => {
                   const estado = e.reclamadoHoy ? "done" : "idle";
                   return (
                     <li
                       key={e.clave}
-                      className="flex items-center gap-3 border-t border-[#efe1c6] p-[13px_18px]"
+                      className="flex items-center gap-3 border-t border-[#efe1c6] p-[13px_18px] first:border-t-0"
                     >
                       <span
                         aria-hidden="true"
@@ -386,10 +425,19 @@ export function HomeScreen({
                           {e.meta}
                         </span>
                       </span>
+                      
                       {estado === "done" ? (
                         <span className="flex-shrink-0 rounded-xl bg-[#e3efdf] px-3 py-2 text-[12px] font-extrabold text-[#477a4e]">
                           ✓ Reclamado
                         </span>
+                      ) : e.esPersonal ? (
+                        <button
+                          type="button"
+                          onClick={() => abrirModalReclamar(e.clave, true)}
+                          className="flex h-[34px] items-center justify-center rounded-full bg-[#fcf9f5] px-3 text-[12.5px] font-bold text-[#c25a2e] transition-colors hover:bg-terracota hover:text-white border-[1.5px] border-[#e6b79c]"
+                        >
+                          ✓ Marcar
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -404,8 +452,8 @@ export function HomeScreen({
                 })}
               </ul>
             </div>
-          </section>
-        )}
+          )}
+        </section>
 
         {/* Pie: puntaje del mes y posición */}
         <section
@@ -444,8 +492,53 @@ export function HomeScreen({
           emoji={modal.emoji}
           puntos={modal.puntos}
           criterios={modal.criterios}
+          requiereFoto={modal.requiereFoto}
+          isSubmitting={isPending}
           onClose={() => setModal(null)}
-          onConfirmar={confirmarModal}
+          onConfirmar={(fotoUrl, nota) => {
+            // El setModal es async para React, así que usamos un timeout para esperar el render
+            startTransition(async () => {
+              if (modal.tipo === "cubrir" && modal.hermanoIdx !== undefined) {
+                const h = hermanos[modal.hermanoIdx];
+                const fd = new FormData();
+                fd.append("deberId", h.deberId);
+                fd.append("participanteId", miId);
+                fd.append("cubiertoA", h.participanteId);
+                if (fotoUrl) fd.append("fotoUrl", fotoUrl);
+                if (nota) fd.append("nota", nota);
+                
+                const res = await cubrirDeberAction(fd);
+                if (!res.ok) {
+                  alert("Error: " + res.error);
+                  return;
+                }
+              } else if (modal.tipo === "reclamar" && modal.extraClave) {
+                const fd = new FormData();
+                fd.append("deberId", modal.extraClave);
+                fd.append("participanteId", miId);
+                if (fotoUrl) fd.append("fotoUrl", fotoUrl);
+                
+                const res = await reclamarExtraAction(fd);
+                if (!res.ok) {
+                  alert("Error: " + res.error);
+                  return;
+                }
+              } else if (modal.tipo === "personal" && modal.extraClave) {
+                const fd = new FormData();
+                fd.append("deberId", modal.extraClave);
+                fd.append("participanteId", miId);
+                if (fotoUrl) fd.append("fotoUrl", fotoUrl);
+                if (nota) fd.append("nota", nota);
+                
+                const res = await marcarCumplidoAction(fd);
+                if (!res.ok) {
+                  alert("Error: " + res.error);
+                  return;
+                }
+              }
+              setModal(null);
+            });
+          }}
         />
       )}
     </>
@@ -458,6 +551,7 @@ function DeberPropioCard({
   variant = "plain",
   deber,
   cumplido,
+  isSubmitting,
   onMarcar,
   onDeshacer,
   className = "",
@@ -465,6 +559,7 @@ function DeberPropioCard({
   variant?: HeroVariant;
   deber: DeberHoy;
   cumplido: boolean;
+  isSubmitting?: boolean;
   onMarcar: () => void;
   onDeshacer: () => void;
   className?: string;
@@ -475,7 +570,33 @@ function DeberPropioCard({
       className={`overflow-hidden rounded-[26px] border border-[#f0e6d5] bg-crema-card ${className}`}
       style={{ boxShadow: "0 22px 46px -24px rgba(90,62,30,.5)" }}
     >
-      {cumplido ? (
+      {deber.cubiertoPor ? (
+        /* Estado cubierto por otro: hero + botón confirmar */
+        <>
+          <div
+            role="status"
+            aria-live="polite"
+            className="relative overflow-hidden p-[28px_24px_20px] text-center"
+            style={{
+              background: "linear-gradient(158deg,#E8F1E2 0%,#D6E9CE 100%)",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              className="animate-pop-lg mx-auto flex size-[60px] items-center justify-center rounded-full bg-verde text-[30px] text-white"
+              style={{ boxShadow: "0 14px 30px -10px rgba(92,154,106,.8)" }}
+            >
+              ✓
+            </span>
+            <p className="mt-3 font-display text-[22px] font-extrabold tracking-[-0.02em] text-[#33502f]">
+              ¡Te cubrieron!
+            </p>
+            <p className="mt-1 text-[13px] font-semibold text-[#5e7a56]">
+              <strong>{deber.cubiertoPor.nombre}</strong> hizo "{deber.nombre}" por ti.
+            </p>
+          </div>
+        </>
+      ) : cumplido ? (
         /* Estado cumplido: reemplaza al hero con celebración + botón deshacer */
         <>
           <div
@@ -558,19 +679,29 @@ function DeberPropioCard({
             <button
               type="button"
               onClick={onMarcar}
-              className="flex w-full items-center justify-center gap-2.5 rounded-[16px] p-[16px] font-display text-[17px] font-bold tracking-[-0.01em] text-white transition-colors hover:brightness-[1.04] active:scale-[0.975] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              disabled={isSubmitting}
+              className="flex w-full items-center justify-center gap-2.5 rounded-[16px] p-[16px] font-display text-[17px] font-bold tracking-[-0.01em] text-white transition-colors disabled:opacity-70 disabled:cursor-wait hover:brightness-[1.04] active:scale-[0.975] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
               style={{
                 background: "linear-gradient(180deg,#E2733F,#D2602F)",
                 boxShadow: "0 14px 26px -10px rgba(210,96,47,.75)",
               }}
             >
-              <span
-                aria-hidden="true"
-                className="inline-flex size-[20px] items-center justify-center rounded-full bg-white/20 text-[12px]"
-              >
-                ✓
-              </span>
-              Marcar como cumplido
+              {isSubmitting ? (
+                <>
+                  <span aria-hidden="true" className="animate-spin text-[16px]">⏳</span>
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <span
+                    aria-hidden="true"
+                    className="inline-flex size-[20px] items-center justify-center rounded-full bg-white/20 text-[12px]"
+                  >
+                    ✓
+                  </span>
+                  Marcar como cumplido
+                </>
+              )}
             </button>
           </div>
         </>
@@ -634,11 +765,13 @@ function HeroFoto({ deber }: { deber: DeberHoy }) {
       {/* Placeholder de la foto */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
         <span aria-hidden="true" className="text-[40px] opacity-50">
-          {deber.emoji}
+          {deber.icono}
         </span>
-        <span className="rounded-md bg-crema-card/70 px-[9px] py-1 font-mono text-[11px] tracking-[0.12em] text-[#9c8a6c]">
-          FOTO MOTIVACIONAL
-        </span>
+        <div className="flex w-full flex-col">
+          <span className="mx-auto rounded-md bg-crema-card/70 px-[9px] py-1 font-mono text-[11px] tracking-[0.12em] text-[#9c8a6c]">
+            FOTO MOTIVACIONAL
+          </span>
+        </div>
       </div>
       {/* Degradado oscuro para legibilidad del título */}
       <div
@@ -678,11 +811,6 @@ function HeroFoto({ deber }: { deber: DeberHoy }) {
 
 /**
  * Bottom sheet que muestra los detalles de un deber al cubrir o reclamar.
- *
- * - Para "cubrir" (obligatorios): muestra criterios y botón de confirmar.
- *   No pide foto porque los obligatorios se marcan por confianza.
- * - Para "reclamar" (extras): muestra criterios, pide foto primero,
- *   y habilita el botón de confirmar solo después de subir la foto.
  */
 function DetalleDeberModal({
   tipo,
@@ -690,19 +818,54 @@ function DetalleDeberModal({
   emoji,
   puntos,
   criterios,
+  requiereFoto = false,
+  isSubmitting = false,
   onClose,
   onConfirmar,
 }: {
-  tipo: "cubrir" | "reclamar";
+  tipo: "cubrir" | "reclamar" | "personal";
   nombre: string;
   emoji: string;
   puntos: number;
   criterios: string[];
+  requiereFoto?: boolean;
+  isSubmitting?: boolean;
   onClose: () => void;
-  onConfirmar: () => void;
+  onConfirmar: (fotoUrl?: string, nota?: string) => void;
 }) {
-  const [fotoSubida, setFotoSubida] = useState(false);
+  const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [nota, setNota] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
+  
   const dialogRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('evidencias')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage.from('evidencias').getPublicUrl(filePath);
+      setFotoUrl(data.publicUrl);
+    } catch (error: any) {
+      alert("Error subiendo foto: " + error.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Cerrar con Escape.
   useEffect(() => {
@@ -727,15 +890,19 @@ function DetalleDeberModal({
     dialogRef.current?.focus();
   }, []);
 
-  const requiereFoto = tipo === "reclamar";
-  const puedeConfirmar = !requiereFoto || fotoSubida;
+  let puedeConfirmar = false;
+  if ((tipo === "reclamar" || tipo === "personal") && requiereFoto) puedeConfirmar = !!fotoUrl;
+  if ((tipo === "reclamar" || tipo === "personal") && !requiereFoto) puedeConfirmar = true;
+  if (tipo === "cubrir") puedeConfirmar = nota.trim().length > 0;
 
-  const labelBoton =
-    tipo === "cubrir" ? "Confirmar cobertura" : "Marcar como cumplido";
-  const subtitulo =
-    tipo === "cubrir"
-      ? `Obligatorio · +${puntos} pts por cubrir`
-      : `Reclamable · +${puntos} pts`;
+  let labelBoton = "Confirmar";
+  if (tipo === "cubrir") labelBoton = "Confirmar cobertura";
+  if (tipo === "reclamar" || tipo === "personal") labelBoton = "Marcar como cumplido";
+  
+  let subtitulo = "";
+  if (tipo === "cubrir") subtitulo = `Obligatorio · +${puntos} pts por cubrir`;
+  if (tipo === "reclamar") subtitulo = `Reclamable · +${puntos} pts`;
+  if (tipo === "personal") subtitulo = `Personal · Extra · +${puntos} pts`;
 
   return (
     <div
@@ -824,35 +991,67 @@ function DetalleDeberModal({
           {/* Subir foto (solo para extras/reclamables) */}
           {requiereFoto && (
             <div className="mt-5">
-              {!fotoSubida ? (
+              <input 
+                type="file" 
+                accept="image/*" 
+                capture="environment" 
+                className="hidden" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+              />
+              {!fotoUrl ? (
                 <button
                   type="button"
-                  onClick={() => setFotoSubida(true)}
-                  className="flex w-full items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-[#dccdb4] bg-[#faf5eb] p-[14px] text-[14px] font-bold text-[#9a8c7c] transition-colors hover:border-[#c5b090] hover:bg-[#f4ecdd] active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracota"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="flex w-full items-center justify-center gap-2 rounded-[14px] border-2 border-dashed border-[#dccdb4] bg-[#faf5eb] p-[14px] text-[14px] font-bold text-[#9a8c7c] transition-colors hover:border-[#c5b090] hover:bg-[#f4ecdd] active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracota disabled:opacity-50"
                 >
                   <span aria-hidden="true" className="text-[18px]">
-                    📷
+                    {isUploading ? "⏳" : "📷"}
                   </span>
-                  Subir foto de prueba
+                  {isUploading ? "Subiendo..." : "Tomar foto de prueba"}
                 </button>
               ) : (
-                <div className="animate-pop flex items-center gap-2 rounded-[14px] bg-[#e3efdf] p-[12px_14px] text-[13px] font-bold text-[#477a4e]">
-                  <span aria-hidden="true" className="text-[16px]">
-                    ✅
-                  </span>
-                  Foto subida correctamente
+                <div className="animate-pop flex flex-col items-center gap-3">
+                  <div className="flex w-full items-center gap-2 rounded-[14px] bg-[#e3efdf] p-[12px_14px] text-[13px] font-bold text-[#477a4e]">
+                    <span aria-hidden="true" className="text-[16px]">✅</span>
+                    Foto subida correctamente
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFotoUrl(null)}
+                    className="text-[13px] font-bold text-[#D2602F] underline decoration-[#D2602F]/30 underline-offset-2 transition-colors hover:decoration-[#D2602F]"
+                  >
+                    Borrar y tomar otra
+                  </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Nota opcional (solo para cubrir) */}
+          {tipo === "cubrir" && (
+            <div className="mt-5">
+              <p className="text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#b19a80]">
+                Justificación (Obligatoria)
+              </p>
+              <textarea 
+                value={nota}
+                onChange={e => setNota(e.target.value)}
+                placeholder="Ej. Le estoy haciendo el favor porque está ocupado..."
+                className="mt-2 w-full rounded-[14px] border border-[#dccdb4] bg-[#faf5eb] p-3 text-[14px] text-[#4a4039] placeholder-[#c5b090] focus-visible:outline-2 focus-visible:outline-terracota resize-none"
+                rows={2}
+              />
             </div>
           )}
 
           {/* Botón de confirmación */}
           <button
             type="button"
-            onClick={puedeConfirmar ? onConfirmar : undefined}
-            disabled={!puedeConfirmar}
-            aria-disabled={!puedeConfirmar}
-            className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-[16px] p-[16px] font-display text-[17px] font-bold tracking-[-0.01em] text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+            onClick={puedeConfirmar ? () => onConfirmar(fotoUrl || undefined, nota || undefined) : undefined}
+            disabled={!puedeConfirmar || isSubmitting}
+            aria-disabled={!puedeConfirmar || isSubmitting}
+            className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-[16px] p-[16px] font-display text-[17px] font-bold tracking-[-0.01em] text-white transition-colors disabled:cursor-wait disabled:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
             style={{
               background: puedeConfirmar
                 ? "linear-gradient(180deg,#E2733F,#D2602F)"
@@ -862,13 +1061,22 @@ function DetalleDeberModal({
                 : "none",
             }}
           >
-            <span
-              aria-hidden="true"
-              className="inline-flex size-[20px] items-center justify-center rounded-full bg-white/20 text-[12px]"
-            >
-              ✓
-            </span>
-            {labelBoton}
+            {isSubmitting ? (
+              <>
+                <span aria-hidden="true" className="animate-spin text-[16px]">⏳</span>
+                Procesando...
+              </>
+            ) : (
+              <>
+                <span
+                  aria-hidden="true"
+                  className="inline-flex size-[20px] items-center justify-center rounded-full bg-white/20 text-[12px]"
+                >
+                  ✓
+                </span>
+                {labelBoton}
+              </>
+            )}
           </button>
         </div>
       </div>

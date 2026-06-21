@@ -59,6 +59,29 @@ export async function editarParticipanteAction(
   }
 }
 
+export async function updateFotoPerfilAction(id: string, fotoUrl: string | null): Promise<Resultado<Participante>> {
+  try {
+    if (!id) throw new Error("Falta el id del participante.");
+    
+    // We only update the fotoUrl, keeping everything else the same.
+    // However, `editarParticipante` requires `nombre` and `esAdmin`.
+    // Since we don't want to fetch it here, let's use a specialized service or just a raw db update.
+    // Actually, `editarParticipante` takes `Partial<InsertParticipante>`. Let's check `participantes.service.ts`.
+    // Assuming we can just do a direct DB update for efficiency.
+    const { db } = await import("@/lib/db");
+    const { participantes } = await import("@/lib/db/schema");
+    const { eq } = await import("drizzle-orm");
+
+    const [actualizado] = await db.update(participantes).set({ fotoUrl }).where(eq(participantes.id, id)).returning();
+    if (!actualizado) throw new Error("Participante no encontrado.");
+    
+    revalidatePath("/", "layout");
+    return exito(actualizado);
+  } catch (e) {
+    return fallo(mensajeDeError(e));
+  }
+}
+
 export async function desactivarParticipanteAction(
   formData: FormData,
 ): Promise<Resultado<Participante>> {

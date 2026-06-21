@@ -42,6 +42,8 @@ import {
 export async function marcarCumplido(input: {
   deberId: string;
   participanteId: string;
+  fotoUrl?: string | null;
+  nota?: string | null;
 }): Promise<Registro> {
   const deber = await obtenerDeber(input.deberId);
   if (!deber || !deber.activo) throw new Error("El deber no existe o está inactivo.");
@@ -78,9 +80,15 @@ export async function marcarCumplido(input: {
     fecha: fechaStr,
     estado: "cumplido_propio",
     confirmado: true, // el deber propio no requiere confirmación de nadie
+    fotoUrl: input.fotoUrl,
+    nota: input.nota,
   });
 
-  await otorgarCumplimiento(registro, deber.puntos);
+  if (deber.esPersonal) {
+    await otorgarReclamable(registro, deber.puntos);
+  } else {
+    await otorgarCumplimiento(registro, deber.puntos);
+  }
 
   // Ahora que hizo lo suyo, puede que tenga coberturas confirmadas a la espera
   // del bono. Intentamos otorgarlo (es idempotente).
@@ -137,9 +145,8 @@ export async function cubrirDeber(input: {
   );
   if (yaCubierto) throw new Error("Ya registraste esta cobertura hoy.");
 
-  // Se crea el registro SIN puntos: el bono se otorga solo cuando el ayudado
-  // confirme y el que cubre ya haya hecho su propio deber.
-  return insertarRegistro({
+  // Se crea el registro ya confirmado automáticamente.
+  const registro = await insertarRegistro({
     hogarId: deber.hogarId,
     deberId: deber.id,
     participanteId: input.participanteId,
@@ -148,8 +155,12 @@ export async function cubrirDeber(input: {
     cubiertoA: input.cubiertoA,
     nota,
     fotoUrl,
-    confirmado: false,
+    confirmado: true,
   });
+
+  await intentarOtorgarBono(registro);
+
+  return registro;
 }
 
 /** La persona cubierta confirma que efectivamente la cubrieron. */

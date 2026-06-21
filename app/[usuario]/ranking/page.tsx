@@ -89,13 +89,17 @@ export default async function RankingPage({ params, searchParams }: Props) {
           <span className="font-display text-[15px] font-extrabold text-tinta">
             {labelMes}
           </span>
-          <Link
-            href={`/${usuario}/ranking?mes=${nextMesStr}`}
-            className="flex size-9 items-center justify-center rounded-xl bg-[#faf5eb] border border-[#f0e6d5] text-[#7a6d60] font-bold transition-all hover:bg-[#f0e6d5] active:scale-95 select-none"
-            aria-label="Mes siguiente"
-          >
-            →
-          </Link>
+          {mesActual === currentMonthStr ? (
+            <div className="size-9" aria-hidden="true" />
+          ) : (
+            <Link
+              href={`/${usuario}/ranking?mes=${nextMesStr}`}
+              className="flex size-9 items-center justify-center rounded-xl bg-[#faf5eb] border border-[#f0e6d5] text-[#7a6d60] font-bold transition-all hover:bg-[#f0e6d5] active:scale-95 select-none"
+              aria-label="Mes siguiente"
+            >
+              →
+            </Link>
+          )}
         </div>
       </div>
 

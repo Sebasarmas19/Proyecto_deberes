@@ -56,12 +56,12 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 
 | Evento | Puntos | Suma a |
 |--------|--------|--------|
-| Cumplir tu deber obligatorio | +10 | General, Confiable |
+| Cumplir tu deber obligatorio | +10 | General |
 | Cubrir el deber de otro (ver Art. 3) | +15 | General, Solidario |
 | Cubrir sin haber hecho el tuyo | 0 | — |
-| Fallar tu deber sin razón válida | −15 | General, Confiable |
+| Fallar tu deber sin razón válida | −15 | General |
 | obligatorio que no hizo nadie | −10 a los tres | General (los tres) |
-| Ausencia con razón válida | 0, no aplica | inmune en Confiable |
+| Ausencia con razón válida | 0, no aplica | — |
 | Lavar ropa (3 tandas) | +15 | General, Responsable |
 | Limpieza profunda | +20 | General, Responsable |
 | Bañar a Sofi (mensual) | +20 | General, Responsable |
@@ -74,7 +74,7 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 
 1. Hacer el deber de otro otorga **+15 puntos**, más que tu propio deber, para premiar la ayuda.
 2. **Solo cuentan esos puntos si ya cumpliste tu propio deber del día.** Si no, la ayuda vale 0 para ambos.
-3. **El ayudado debe confirmar** desde la app que efectivamente fue cubierto. Sin esa confirmación, los puntos no se otorgan.
+3. **No se requiere confirmación del ayudado.** Al registrar que cubriste a alguien, el deber se da por cumplido y el bono se otorga de forma automática e inmediata.
 4. Cubrir a otro requiere **justificación** (texto o foto), que queda en el registro. Da igual si fue porque se lo ayudaste o porque te pidió el favor: el sistema lo trata igual.
 
 ---
@@ -83,7 +83,7 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 
 1. Una ausencia con razón válida (viaje, no estar en casa ese día) declarada en el plan de la semana hace que el deber **no aplique** a esa persona: no gana ni pierde puntos.
 2. Las ausencias quedan **registradas y visibles** para los tres. El admin las aprueba o ajusta, para que nadie use "no estaba" como excusa para zafarse de una falla.
-3. La ausencia **no afecta el ranking Confiable** (porcentaje), porque ese día no entra en la cuenta.
+3. La ausencia exime del deber, porque ese día no entra en la cuenta.
 
 ---
 
@@ -97,7 +97,7 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 
 ## Artículo 6 · Rankings y logros
 
-1. Cada mes se cierran cuatro rankings: **General, Confiable, Solidario y Responsable de la Casa**.
+1. Cada mes se cierran tres rankings: **General, Solidario y Responsable de la Casa**.
 2. Los ganadores reciben un **título del mes**, que se reinicia cada mes.
 3. Las **medallas** se desbloquean por logros y se quedan para siempre en el perfil, con su fecha y tema. Todos los hermanos pueden tener la misma medalla.
 4. A fin de mes se hace la entrega de títulos y medallas, y todo se archiva en el perfil de cada uno.
@@ -108,7 +108,7 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 
 1. Los **deberes obligatorios** se marcan con un simple check. Funcionan por confianza.
 2. Los **deberes opcionales y adicionales** requieren **foto o prueba** de que se hicieron.
-3. **Cubrir a otro** requiere justificación **y** la confirmación del ayudado (Art. 3).
+3. **Cubrir a otro** requiere justificación (Art. 3) pero se aprueba automáticamente.
 4. Los **criterios de aceptación** de un deber (la lista de qué significa "cumplido") se muestran **solo como referencia**. No se tilda criterio por criterio: se marca el deber completo con un único botón **"Marcar como cumplido"**, lo que afirma que se cumplieron todos los criterios.
 
 ---

@@ -1,0 +1,1 @@
+import { db, pool } from "../lib/db"; import { sql } from "drizzle-orm"; async function main() { try { await db.execute(sql`ALTER TABLE deberes ADD COLUMN IF NOT EXISTS icono text NOT NULL DEFAULT '?';`); console.log("Done"); } catch (error) { console.error(error); } finally { await pool.end(); } } main();

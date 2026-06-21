@@ -37,6 +37,8 @@ export async function marcarCumplidoAction(
     const registro = await marcarCumplido({
       deberId: requerir(formData, "deberId"),
       participanteId: requerir(formData, "participanteId"),
+      fotoUrl: formData.get("fotoUrl") ? String(formData.get("fotoUrl")) : null,
+      nota: formData.get("nota") ? String(formData.get("nota")) : null,
     });
     revalidatePath("/", "layout");
     return exito(registro);
