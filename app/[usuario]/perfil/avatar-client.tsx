@@ -39,7 +39,7 @@ export function AvatarClient({ participanteId, nombre, fotoUrl, borderColorClass
       
       startTransition(async () => {
         const result = await updateFotoPerfilAction(participanteId, data.publicUrl);
-        if (result.exito) {
+        if (result.ok) {
           router.refresh();
         } else {
           alert("Error guardando la foto en el perfil: " + result.error);

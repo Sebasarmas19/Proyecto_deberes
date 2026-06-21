@@ -28,7 +28,7 @@ export type FilaRanking = {
   posicion: number; // 1 = primero. Empates comparten posición.
   detalle?: string; // texto opcional (ej. "8/10 deberes" en confiable)
 };
-
+export type Rankings = {
   mes: string; // 'YYYY-MM'
   general: FilaRanking[];
   solidario: FilaRanking[];

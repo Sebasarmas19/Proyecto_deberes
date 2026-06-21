@@ -163,7 +163,7 @@ export function HomeScreen({
     setModal({
       tipo: "cubrir",
       nombre: h.deberNombre,
-      emoji: h.emoji,
+      emoji: h.emoji || "✨",
       puntos: 15, // cubrir siempre vale 15
       criterios: h.deberCriterios,
       hermanoIdx,
@@ -318,7 +318,6 @@ export function HomeScreen({
                   className="relative flex-1 rounded-[18px] px-[9px] pb-3 pt-[13px] text-center"
                   style={parseStyle(h.cardStyle)}
                 >
-                  {h.esYo && (
                   <div className="relative">
                     <div
                       className="mx-auto flex size-[46px] items-center justify-center rounded-full bg-white text-[23px] font-bold text-naranja shadow-sm"
@@ -628,7 +627,7 @@ function DeberPropioCard({
               aria-hidden="true"
               className="absolute -top-3 right-[-10px] text-[70px] opacity-[0.12]"
             >
-              {deber.emoji}
+              {deber.icono}
             </span>
           </div>
           <div className="px-5 py-3">
@@ -731,7 +730,7 @@ function HeroColor({ deber }: { deber: DeberHoy }) {
           className="text-[60px] leading-none"
           style={{ filter: "drop-shadow(0 6px 8px rgba(120,80,20,.28))" }}
         >
-          {deber.emoji}
+          {deber.icono}
         </span>
         <div>
           <p className="font-display text-[33px] font-extrabold leading-[0.98] tracking-[-0.03em] text-[#4a3914]">
@@ -746,7 +745,7 @@ function HeroColor({ deber }: { deber: DeberHoy }) {
         aria-hidden="true"
         className="absolute -bottom-[26px] -right-3.5 z-[1] text-[130px] leading-none opacity-[0.13]"
       >
-        {deber.emoji}
+        {deber.icono}
       </span>
     </div>
   );
@@ -791,7 +790,7 @@ function HeroFoto({ deber }: { deber: DeberHoy }) {
             className="text-[44px] leading-none"
             style={{ filter: "drop-shadow(0 4px 10px rgba(0,0,0,.4))" }}
           >
-            {deber.emoji}
+            {deber.icono}
           </span>
           <div>
             <p className="font-display text-[31px] font-extrabold leading-[0.96] tracking-[-0.03em] text-white">
