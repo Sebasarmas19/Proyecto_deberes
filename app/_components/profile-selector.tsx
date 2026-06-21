@@ -109,6 +109,25 @@ function EstadoSinHogar() {
 
 // ── ESTADO B: Con usuarios ──────────────────────────────────────────────────
 
+// Colores para cada círculo de usuario (se asignan en orden)
+const userColors = [
+  {
+    bg: "linear-gradient(158deg, #FCEBB6 0%, #F6D582 100%)",
+    icon: "#A88430",
+    shadow: "0 12px 32px -12px rgba(180,130,40,.4)",
+  },
+  {
+    bg: "linear-gradient(158deg, #FBE3D0 0%, #F4C8A8 100%)",
+    icon: "#C49060",
+    shadow: "0 12px 32px -12px rgba(210,140,80,.4)",
+  },
+  {
+    bg: "linear-gradient(158deg, #E8F1E2 0%, #D6E9CE 100%)",
+    icon: "#5C9A6A",
+    shadow: "0 12px 32px -12px rgba(92,154,106,.35)",
+  },
+];
+
 function EstadoConUsuarios({
   nombreHogar,
   participantes,
@@ -124,25 +143,6 @@ function EstadoConUsuarios({
 
   const [isPending, startTransition] = useTransition();
   const [loadingUser, setLoadingUser] = useState<string | null>(null);
-
-  // Colores para cada círculo de usuario (se asignan en orden)
-  const userColors = [
-    {
-      bg: "linear-gradient(158deg, #FCEBB6 0%, #F6D582 100%)",
-      icon: "#A88430",
-      shadow: "0 12px 32px -12px rgba(180,130,40,.4)",
-    },
-    {
-      bg: "linear-gradient(158deg, #FBE3D0 0%, #F4C8A8 100%)",
-      icon: "#C49060",
-      shadow: "0 12px 32px -12px rgba(210,140,80,.4)",
-    },
-    {
-      bg: "linear-gradient(158deg, #E8F1E2 0%, #D6E9CE 100%)",
-      icon: "#5C9A6A",
-      shadow: "0 12px 32px -12px rgba(92,154,106,.35)",
-    },
-  ];
 
   return (
     <div className="flex w-full max-w-[400px] flex-col items-center">

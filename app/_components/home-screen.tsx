@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useTransition } from "react";
+import { marcarCumplidoAction, cubrirDeberAction, reclamarExtraAction } from "@/lib/cumplimiento/cumplimiento.actions";
 
 /**
  * Pantalla principal (HomeScreen) — rediseño.
@@ -24,13 +25,17 @@ import { useState, useEffect, useRef } from "react";
 export type HeroVariant = "plain" | "photo";
 
 export type DeberHoy = {
+  id: string;
   nombre: string;
   emoji: string;
   puntos: number;
   criterios: string[];
+  cumplido: boolean;
 };
 
 export type HermanoEstado = {
+  participanteId: string;
+  cobertura?: "bonus" | "nobonus";
   nombre: string;
   /** Etiqueta visible del rol, p. ej. "Cocina hoy" o "Tú · Sofi". */
   rol: string;
@@ -39,6 +44,8 @@ export type HermanoEstado = {
   cumplido: boolean;
   /** Nombre completo del deber para el modal, p. ej. "Cocinar". */
   deberNombre: string;
+  /** UUID del deber */
+  deberId: string;
   /** Puntos del deber asignado. */
   deberPuntos: number;
   /** Criterios de aceptación del deber (se muestran en el modal). */
@@ -50,6 +57,7 @@ export type HermanoEstado = {
 };
 
 export type ExtraSemana = {
+  reclamadoHoy: boolean;
   clave: string;
   icono: string;
   label: string;
@@ -60,6 +68,7 @@ export type ExtraSemana = {
 };
 
 export type HomeScreenProps = {
+  miId: string;
   variant?: HeroVariant;
   userName: string;
   dateLabel: string;
@@ -98,9 +107,9 @@ export function HomeScreen({
   extras,
   puntosBase,
   posicionLabel,
+  miId,
 }: HomeScreenProps) {
-  // Qué deberes propios ya se marcaron (por índice).
-  const [cumplidos, setCumplidos] = useState<Record<number, boolean>>({});
+  const [isPending, startTransition] = useTransition();
 
   // Modal para cubrir deberes o reclamar extras.
   const [modal, setModal] = useState<ModalData | null>(null);
@@ -108,36 +117,26 @@ export function HomeScreen({
   // Sección de extras abierta/cerrada.
   const [extrasOpen, setExtrasOpen] = useState(true);
 
-  // Coberturas por hermano (índice → tipo de bono).
-  const [coberturas, setCoberturas] = useState<
-    Record<number, EstadoCobertura>
-  >({});
-
-  // Estado de cada extra: idle (no reclamado) o done (reclamado con foto).
-  const [estadoExtras, setEstadoExtras] = useState<Record<string, "idle" | "done">>(
-    () => Object.fromEntries(extras.map((e) => [e.clave, "idle"])),
-  );
-
   // ¿Todos mis deberes del día están cumplidos? (necesario para el bono).
   const todosMisDeberesCumplidos =
-    deberesHoy.length > 0 && deberesHoy.every((_, i) => cumplidos[i]);
+    deberesHoy.length > 0 && deberesHoy.every((d) => d.cumplido);
 
   // ── Handlers ────────────────────────────────────────────────────────────
 
-  const marcarCumplido = (idx: number) =>
-    setCumplidos((prev) => ({ ...prev, [idx]: true }));
+  const marcarCumplido = (idx: number) => {
+    const deber = deberesHoy[idx];
+    if (deber.cumplido) return;
+    startTransition(async () => {
+      const fd = new FormData();
+      fd.append("deberId", deber.id);
+      fd.append("participanteId", miId);
+      await marcarCumplidoAction(fd);
+    });
+  };
 
   const deshacerCumplido = (idx: number) => {
-    setCumplidos((prev) => ({ ...prev, [idx]: false }));
-    // Si deshaces un deber propio, ya no tienes todos cumplidos → los bonos
-    // de cobertura bajan a "nobonus".
-    setCoberturas((prev) => {
-      const copia = { ...prev };
-      for (const k of Object.keys(copia)) {
-        if (copia[Number(k)] === "bonus") copia[Number(k)] = "nobonus";
-      }
-      return copia;
-    });
+    // La BD no permite "deshacer" directamente a los usuarios (solo el admin).
+    alert("No se puede deshacer un deber. Si te equivocaste, avisa al admin.");
   };
 
   const abrirModalCubrir = (hermanoIdx: number) => {
@@ -167,34 +166,30 @@ export function HomeScreen({
 
   const confirmarModal = () => {
     if (!modal) return;
-    if (modal.tipo === "cubrir" && modal.hermanoIdx !== undefined) {
-      setCoberturas((prev) => ({
-        ...prev,
-        [modal.hermanoIdx!]: todosMisDeberesCumplidos ? "bonus" : "nobonus",
-      }));
-    } else if (modal.tipo === "reclamar" && modal.extraClave) {
-      setEstadoExtras((prev) => ({
-        ...prev,
-        [modal.extraClave!]: "done",
-      }));
-    }
-    setModal(null);
+    
+    startTransition(async () => {
+      if (modal.tipo === "cubrir" && modal.hermanoIdx !== undefined) {
+        const h = hermanos[modal.hermanoIdx];
+        const fd = new FormData();
+        fd.append("deberId", h.deberId);
+        fd.append("participanteId", miId);
+        fd.append("cubiertoA", h.participanteId);
+        await cubrirDeberAction(fd);
+      } else if (modal.tipo === "reclamar" && modal.extraClave) {
+        const fd = new FormData();
+        fd.append("deberId", modal.extraClave);
+        fd.append("participanteId", miId);
+        fd.append("fotoUrl", "https://picsum.photos/400"); // placeholder
+        await reclamarExtraAction(fd);
+      }
+      setModal(null);
+    });
   };
 
   // ── Puntaje derivado del estado ─────────────────────────────────────────
 
+  // El backend ya lo calculó y lo trae listo en puntosBase
   let puntosMes = puntosBase;
-  for (const [idx, done] of Object.entries(cumplidos)) {
-    if (done && deberesHoy[Number(idx)]) {
-      puntosMes += deberesHoy[Number(idx)].puntos;
-    }
-  }
-  for (const estado of Object.values(coberturas)) {
-    if (estado === "bonus") puntosMes += 15;
-  }
-  for (const extra of extras) {
-    if (estadoExtras[extra.clave] === "done") puntosMes += extra.puntos;
-  }
 
   // ── Render ──────────────────────────────────────────────────────────────
 
@@ -202,8 +197,8 @@ export function HomeScreen({
     <>
       <main
         className="mx-auto min-h-dvh w-full max-w-[420px] bg-crema px-[18px] pt-2 font-sans text-tinta"
-        style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))" }}
-        inert={!!modal}
+        style={{ paddingBottom: "max(30px, env(safe-area-inset-bottom))", opacity: isPending ? 0.6 : 1, transition: "opacity 0.2s" }}
+        inert={!!modal || isPending}
       >
         {/* Saludo + fecha */}
         <header className="px-0.5 pb-4 pt-2">
@@ -234,7 +229,7 @@ export function HomeScreen({
               key={idx}
               variant={variant}
               deber={deber}
-              cumplido={!!cumplidos[idx]}
+              cumplido={deber.cumplido}
               onMarcar={() => marcarCumplido(idx)}
               onDeshacer={() => deshacerCumplido(idx)}
               className={idx > 0 ? "mt-3.5" : ""}
@@ -258,7 +253,7 @@ export function HomeScreen({
               const cumplidoVisible = h.esYo
                 ? todosMisDeberesCumplidos
                 : h.cumplido;
-              const cobertura = coberturas[i];
+              const cobertura = h.cobertura;
               const puedeCubrir =
                 !h.esYo && !h.cumplido && cobertura === undefined;
 
@@ -371,7 +366,7 @@ export function HomeScreen({
             >
               <ul inert={!extrasOpen} className="overflow-hidden">
                 {extras.map((e) => {
-                  const estado = estadoExtras[e.clave];
+                  const estado = e.reclamadoHoy ? "done" : "idle";
                   return (
                     <li
                       key={e.clave}
@@ -597,7 +592,7 @@ function HeroColor({ deber }: { deber: DeberHoy }) {
       }}
     >
       <span className="inline-flex items-center gap-1.5 rounded-[30px] bg-[#5e4016]/15 px-[11px] py-1.5 text-[10.5px] font-extrabold uppercase tracking-[0.1em] text-[#7a5a1e]">
-        ⭐ Tu deber de hoy · No negociable
+        ⭐ Tu deber de hoy · Obligatorio
       </span>
       <div className="relative z-[2] mt-4 flex items-center gap-3.5">
         <span
@@ -655,7 +650,7 @@ function HeroFoto({ deber }: { deber: DeberHoy }) {
       />
       <div className="absolute inset-x-5 bottom-4 z-[2]">
         <span className="inline-flex items-center gap-1.5 rounded-[30px] bg-white/20 px-2.5 py-[5px] text-[10px] font-extrabold uppercase tracking-[0.1em] text-white backdrop-blur-sm">
-          ⭐ Tu deber de hoy · No negociable
+          ⭐ Tu deber de hoy · Obligatorio
         </span>
         <div className="mt-[11px] flex items-end gap-3">
           <span
@@ -739,7 +734,7 @@ function DetalleDeberModal({
     tipo === "cubrir" ? "Confirmar cobertura" : "Marcar como cumplido";
   const subtitulo =
     tipo === "cubrir"
-      ? `No negociable · +${puntos} pts por cubrir`
+      ? `Obligatorio · +${puntos} pts por cubrir`
       : `Reclamable · +${puntos} pts`;
 
   return (

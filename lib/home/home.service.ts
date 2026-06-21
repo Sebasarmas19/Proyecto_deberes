@@ -74,6 +74,8 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
 
   // Determinar qué deberes de asignación ya fueron cumplidos
   const deberesCumplidosPor = new Set(registrosHoy.filter(r => r.estado === "cumplido_propio").map(r => r.participanteId));
+  const coberturasAConfirmar = new Set(registrosHoy.filter(r => r.estado === "cubrio_a_otro" && r.participanteId === yo.id).map(r => r.cubiertoA));
+  const extrasReclamadosPorMi = new Set(registrosHoy.filter(r => r.estado === "reclamado" && r.participanteId === yo.id).map(r => r.deberId));
 
   // Preparar deberes del usuario actual (`deberesHoy`)
   const misDeberes: DeberHoy[] = [];
@@ -90,38 +92,61 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
   for (const part of participantesActivos) {
     const esYo = part.id === yo.id;
     
-    // Buscar si tiene un deber rotativo hoy
-    const asignacion = Array.from(deberesAgrupados.values()).find((d) => d.asignacion.participanteId === part.id);
-    const estaCumplido = deberesCumplidosPor.has(part.id);
+    // Ojo: iteramos sobre TODAS las asignaciones (rotativo, personal, etc)
+    const misAsignaciones = Array.from(deberesAgrupados.values()).filter((a) => a.asignacion.participanteId === part.id && a.deber.tipoAsignacion === "rotativo");
     
-    // Configurar emoticonos fijos de prueba por nombre
-    const emoji = part.nombre === "Sebastián" ? "🍳" : part.nombre === "Samuel" ? "🐾" : "🍽️";
-    
+    // Asumimos que la primera o la más pesada es la principal para mostrar a los hermanos
+    const asignacionPrincipal = misAsignaciones[0];
+    const estaCumplido = deberesCumplidosPor.has(part.id); // TODO: Esto asume 1 deber por persona. Necesita revisión en el futuro si hay varios.
+
     // Si es "Yo", armar Mis Deberes
-    if (esYo && asignacion) {
-      misDeberes.push({
-        nombre: asignacion.deber.nombre,
-        emoji,
-        puntos: Number(asignacion.deber.puntos),
-        criterios: asignacion.criterios,
-      });
+    if (esYo) {
+      for (const item of misAsignaciones) {
+        const emoji = item.deber.nombre.toLowerCase().includes("platos")
+          ? "🍽️"
+          : item.deber.nombre.toLowerCase().includes("cocinar")
+            ? "🍳"
+            : item.deber.nombre.toLowerCase().includes("sofi")
+              ? "🐶"
+              : "🛏️";
+
+        misDeberes.push({
+          id: item.deber.id,
+          nombre: item.deber.nombre,
+          emoji,
+          puntos: Number(item.deber.puntos),
+          criterios: item.criterios,
+          cumplido: estaCumplido, // Warning: if there are multiple chores, this boolean needs to be per chore!
+        });
+      }
     }
 
     // Armar el estado del hermano
     // Nota: El rol en el frontend mostraba cosas como "Tú · Sofi" o "Cocina hoy"
-    let rolLabel = asignacion ? asignacion.deber.nombre : "Día libre";
-    if (esYo && asignacion) {
-      rolLabel = `Tú · ${asignacion.deber.nombre.split(" ")[0]}`;
+    let rolLabel = asignacionPrincipal ? asignacionPrincipal.deber.nombre : "Día libre";
+    if (esYo && asignacionPrincipal) {
+      rolLabel = `Tú · ${asignacionPrincipal.deber.nombre.split(" ")[0]}`;
     }
 
+    // Configurar emoticonos fijos de prueba por nombre
+    const emojiHermano = part.nombre === "Sebastián" ? "🍳" : part.nombre === "Samuel" ? "🐾" : "🍽️";
+
     const estilo = estilosHermanos[part.nombre] || estilosHermanos["Sebastián"];
+    const coberturaStatus = coberturasAConfirmar.has(part.id) ? "bonus" : undefined;
+
+    // TODO: estaCumplido assumes 1 chore! If they have multiple, we need a different check for "has completed ALL their chores".
+    // For now, let's keep the existing logic for the "brother" view.
+    const asignacion = asignacionPrincipal;
 
     hermanosData.push({
+      participanteId: part.id,
+      cobertura: coberturaStatus as any,
       nombre: part.nombre,
       rol: rolLabel,
-      emoji,
+      emoji: emojiHermano,
       esYo,
       cumplido: estaCumplido,
+      deberId: asignacion?.deber.id || "",
       deberNombre: asignacion?.deber.nombre || "Ninguno",
       deberPuntos: asignacion ? Number(asignacion.deber.puntos) : 0,
       deberCriterios: asignacion?.criterios || [],
@@ -164,6 +189,7 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
   }
 
   const extrasFormateados: ExtraSemana[] = Array.from(extrasAgrupados.values()).map((e) => ({
+    reclamadoHoy: extrasReclamadosPorMi.has(e.deber.id),
     clave: e.deber.id,
     icono: e.deber.nombre === "Lavar ropa" ? "🧺" : "🧽", // mock
     label: e.deber.nombre,
@@ -213,6 +239,7 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
 
   // 9. Retornar los props listos para renderizar
   return {
+    miId: yo.id,
     userName: yo.nombre,
     dateLabel,
     deberesHoy: misDeberes,

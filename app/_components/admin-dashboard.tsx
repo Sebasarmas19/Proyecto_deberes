@@ -82,6 +82,7 @@ const ACCESOS_RAPIDOS: AccesoRapido[] = [
 
 export function AdminDashboard({ data }: { data: AdminDashboardData }) {
   const router = useRouter();
+  const [isPending, startTransition] = React.useTransition();
 
   return (
     <main className="mx-auto min-h-dvh max-w-[480px] px-4 pb-10 pt-6">
@@ -124,8 +125,6 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
         </h2>
         <div className="grid grid-cols-3 gap-3">
           {ACCESOS_RAPIDOS.map((acceso) => {
-            const [isPending, startTransition] = React.useTransition();
-
             return (
               <button
                 key={acceso.clave}

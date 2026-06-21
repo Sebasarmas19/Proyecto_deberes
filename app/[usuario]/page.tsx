@@ -22,6 +22,7 @@ export default async function UsuarioHome({ params }: Props) {
 
     return (
       <HomeScreen
+        miId={data.miId}
         variant="plain"
         userName={data.userName}
         dateLabel={data.dateLabel}

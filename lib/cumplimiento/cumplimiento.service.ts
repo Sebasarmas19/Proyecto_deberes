@@ -244,7 +244,7 @@ export async function reclamarExtra(input: {
       deber.id,
       inicio,
       fin,
-      deber.esPersonal ? input.participanteId : undefined,
+      deber.limitePorPersona ? input.participanteId : undefined,
     );
     if (usados >= deber.maxReclamos) {
       throw new Error("Ya se alcanzó el cupo de este extra para este período.");

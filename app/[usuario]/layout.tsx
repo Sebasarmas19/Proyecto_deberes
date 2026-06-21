@@ -8,6 +8,8 @@ type Props = {
   params: Promise<{ usuario: string }>;
 };
 
+import { PushManager } from "../_components/push-manager";
+
 export default async function UsuarioLayout({ children, params }: Props) {
   const { usuario } = await params;
   const decodedUsuario = decodeURIComponent(usuario);
@@ -35,6 +37,7 @@ export default async function UsuarioLayout({ children, params }: Props) {
     <div className="mx-auto min-h-dvh max-w-[420px] pb-24 relative bg-crema">
       {children}
       <BottomNavBar usuario={usuarioParam} />
+      {participanteObj && <PushManager participanteId={participanteObj.id} />}
     </div>
   );
 }

@@ -105,7 +105,7 @@ export function WizardSetup() {
     formData.append("nombre", data.nombre);
     formData.append("zonaHoraria", data.zonaHoraria);
     formData.append("horaCierreDia", data.horaCierreDia);
-    formData.append("bonoAyuda", "5");
+    formData.append("bonoAyuda", "15");
     formData.append("penalizacionFallo", "15");
     formData.append("penalizacionColectiva", "10");
     formData.append("claveAdmin", data.claveAdmin);

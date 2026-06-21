@@ -67,6 +67,20 @@ export const participantes = pgTable("participantes", {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
+// suscripciones_push — para enviar notificaciones web push
+// ─────────────────────────────────────────────────────────────────────────────
+export const suscripcionesPush = pgTable("suscripciones_push", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  participanteId: uuid("participante_id")
+    .notNull()
+    .references(() => participantes.id, { onDelete: "cascade" }),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
 // deberes — totalmente configurables por el admin. Dos ejes independientes:
 // tipo_asignacion (como se asigna) y es_obligatorio (que tan critico es).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -343,6 +357,7 @@ export const participantesRelations = relations(
       fields: [participantes.hogarId],
       references: [hogar.id],
     }),
+    suscripcionesPush: many(suscripcionesPush),
     asignaciones: many(asignaciones),
     ausencias: many(ausencias),
     registros: many(registros),
@@ -351,6 +366,13 @@ export const participantesRelations = relations(
     titulosMes: many(titulosMes),
   }),
 );
+
+export const suscripcionesPushRelations = relations(suscripcionesPush, ({ one }) => ({
+  participante: one(participantes, {
+    fields: [suscripcionesPush.participanteId],
+    references: [participantes.id],
+  }),
+}));
 
 export const deberesRelations = relations(deberes, ({ one, many }) => ({
   hogar: one(hogar, { fields: [deberes.hogarId], references: [hogar.id] }),
