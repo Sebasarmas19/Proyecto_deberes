@@ -17,6 +17,8 @@ const hanken = Hanken_Grotesk({
   weight: ["400", "500", "600", "700", "800"],
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dinow",
   description: "Organiza, recuerda y registra los deberes del hogar.",

@@ -213,7 +213,7 @@ export function WizardSetup() {
                     type="time"
                     value={data.horaCierreDia}
                     onChange={(e) => updateData("horaCierreDia", e.target.value)}
-                    className="w-full rounded-[14px] border border-[#e6d9c4] bg-white px-4 py-3.5 text-[15px] font-semibold text-tinta outline-none transition-colors focus:border-terracota"
+                    className="m-0 block w-full min-w-0 appearance-none rounded-[14px] border border-[#e6d9c4] bg-white px-4 py-3.5 text-[15px] font-semibold text-tinta outline-none transition-colors focus:border-terracota"
                   />
                   <p className="mt-2 text-[12px] font-medium text-[#c5b090]">
                     Los deberes marcados después de esta hora cuentan para el día siguiente.

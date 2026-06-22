@@ -139,7 +139,7 @@ export async function GET(request: Request) {
         .select()
         .from(deberes)
         .where(and(
-          eq(deberes.tipoAsignacion, "reclamable"),
+          eq(deberes.esObligatorio, false),
           eq(deberes.activo, true)
         ));
       

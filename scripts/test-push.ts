@@ -2,8 +2,6 @@ import "dotenv/config";
 
 async function main() {
   const horas = [
-    { nombre: "Mañana (6 AM)", forceHour: 10 },
-    { nombre: "Tarde (2 PM)", forceHour: 18 },
     { nombre: "Noche (7 PM)", forceHour: 23 },
   ];
 
