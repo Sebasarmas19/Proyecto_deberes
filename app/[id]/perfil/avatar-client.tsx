@@ -4,6 +4,7 @@ import { useState, useRef, useTransition } from "react";
 import { supabase } from "@/lib/db/supabase";
 import { updateFotoPerfilAction } from "@/lib/participantes/participantes.actions";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 type AvatarClientProps = {
   participanteId: string;
@@ -42,11 +43,11 @@ export function AvatarClient({ participanteId, nombre, fotoUrl, borderColorClass
         if (result.ok) {
           router.refresh();
         } else {
-          alert("Error guardando la foto en el perfil: " + result.error);
+          toast.error("Error guardando la foto en el perfil: " + result.error);
         }
       });
     } catch (error: any) {
-      alert("Error subiendo foto: " + error.message);
+      toast.error("Error subiendo foto: " + error.message);
     } finally {
       setUploading(false);
     }

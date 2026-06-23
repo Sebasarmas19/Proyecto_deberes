@@ -101,7 +101,7 @@ export function LandingPage() {
                 "0 16px 32px -12px rgba(210,96,47,.7), 0 4px 12px -4px rgba(210,96,47,.3)",
             }}
           >
-            Comenzar
+            Crear hogar
             <span aria-hidden="true" className="text-[16px]">
               →
             </span>

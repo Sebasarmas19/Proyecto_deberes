@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useTransition } from "react";
 import { marcarCumplidoAction, cubrirDeberAction, reclamarExtraAction, confirmarCoberturaAction } from "@/lib/cumplimiento/cumplimiento.actions";
 import { supabase } from "@/lib/db/supabase";
+import toast from "react-hot-toast";
 
 /**
  * Pantalla principal (HomeScreen) — rediseño.
@@ -144,7 +145,7 @@ export function HomeScreen({
 
   const deshacerCumplido = (idx: number) => {
     // La BD no permite "deshacer" directamente a los usuarios (solo el admin).
-    alert("No se puede deshacer un deber. Si te equivocaste, avisa al admin.");
+    toast.error("No se puede deshacer un deber. Si te equivocaste, avisa al admin.");
   };
 
   const marcarExtraPersonalCumplido = (extraClave: string) => {
@@ -199,7 +200,7 @@ export function HomeScreen({
         
         const res = await cubrirDeberAction(fd);
         if (!res.ok) {
-          alert("Error: " + res.error);
+          toast.error("Error: " + res.error);
           return;
         }
       } else if (modal.tipo === "reclamar" && modal.extraClave) {
@@ -210,7 +211,7 @@ export function HomeScreen({
         
         const res = await reclamarExtraAction(fd);
         if (!res.ok) {
-          alert("Error: " + res.error);
+          toast.error("Error: " + res.error);
           return;
         }
       } else if (modal.tipo === "personal" && modal.extraClave) {
@@ -222,7 +223,7 @@ export function HomeScreen({
         
         const res = await marcarCumplidoAction(fd);
         if (!res.ok) {
-          alert("Error: " + res.error);
+          toast.error("Error: " + res.error);
           return;
         }
       }
@@ -236,7 +237,7 @@ export function HomeScreen({
     fd.append("participanteId", miId);
     const res = await confirmarCoberturaAction(fd);
     if (!res.ok) {
-      alert("Error: " + res.error);
+      toast.error("Error: " + res.error);
     }
   };
 
@@ -508,7 +509,7 @@ export function HomeScreen({
                 
                 const res = await cubrirDeberAction(fd);
                 if (!res.ok) {
-                  alert("Error: " + res.error);
+                  toast.error("Error: " + res.error);
                   return;
                 }
               } else if (modal.tipo === "reclamar" && modal.extraClave) {
@@ -519,7 +520,7 @@ export function HomeScreen({
                 
                 const res = await reclamarExtraAction(fd);
                 if (!res.ok) {
-                  alert("Error: " + res.error);
+                  toast.error("Error: " + res.error);
                   return;
                 }
               } else if (modal.tipo === "personal" && modal.extraClave) {
@@ -531,7 +532,7 @@ export function HomeScreen({
                 
                 const res = await marcarCumplidoAction(fd);
                 if (!res.ok) {
-                  alert("Error: " + res.error);
+                  toast.error("Error: " + res.error);
                   return;
                 }
               }
@@ -860,7 +861,7 @@ function DetalleDeberModal({
       const { data } = supabase.storage.from('evidencias').getPublicUrl(filePath);
       setFotoUrl(data.publicUrl);
     } catch (error: any) {
-      alert("Error subiendo foto: " + error.message);
+      toast.error("Error subiendo foto: " + error.message);
     } finally {
       setIsUploading(false);
     }

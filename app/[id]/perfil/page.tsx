@@ -12,19 +12,16 @@ import { CATALOGO_LOGROS } from "@/lib/logros/catalogo";
 import { AvatarClient } from "./avatar-client";
 
 type Props = {
-  params: Promise<{ usuario: string }>;
+  params: Promise<{ id: string }>;
 };
 
 export default async function PerfilPage({ params }: Props) {
-  const { usuario } = await params;
-  const decodedUsuario = decodeURIComponent(usuario);
+  const { id } = await params;
 
   const hogarId = await obtenerHogarActualId();
   const participantes = await listarParticipantes(hogarId);
 
-  const yo = participantes.find(
-    (p) => p.nombre.toLowerCase() === decodedUsuario.toLowerCase()
-  );
+  const yo = participantes.find((p) => p.id === id);
 
   if (!yo) {
     redirect("/");

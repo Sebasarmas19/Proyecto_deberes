@@ -5,12 +5,12 @@ import { obtenerFechaDeNegocio, formatearFechaISO } from "@/lib/shared/date";
 import { RankingClient } from "./ranking-client";
 
 type Props = {
-  params: Promise<{ usuario: string }>;
+  params: Promise<{ id: string }>;
   searchParams: Promise<{ mes?: string }>;
 };
 
 export default async function RankingPage({ params, searchParams }: Props) {
-  const { usuario } = await params;
+  const { id } = await params;
   const { mes } = await searchParams;
 
   const currentBusinessDate = obtenerFechaDeNegocio();
@@ -19,7 +19,7 @@ export default async function RankingPage({ params, searchParams }: Props) {
 
   // Validamos el formato YYYY-MM
   if (!/^\d{4}-\d{2}$/.test(mesActual)) {
-    redirect(`/${usuario}/ranking?mes=${currentMonthStr}`);
+    redirect(`/${id}/ranking?mes=${currentMonthStr}`);
   }
 
   const [yearStr, monthStr] = mesActual.split("-");
@@ -27,7 +27,7 @@ export default async function RankingPage({ params, searchParams }: Props) {
   const month = parseInt(monthStr, 10);
 
   if (month < 1 || month > 12) {
-    redirect(`/${usuario}/ranking?mes=${currentMonthStr}`);
+    redirect(`/${id}/ranking?mes=${currentMonthStr}`);
   }
 
   // Calculamos los rankings para el mes seleccionado
@@ -80,7 +80,7 @@ export default async function RankingPage({ params, searchParams }: Props) {
         {/* Selector de Mes */}
         <div className="flex items-center justify-between bg-crema-card border border-[#f0e6d5] rounded-2xl p-3 shadow-sm">
           <Link
-            href={`/${usuario}/ranking?mes=${prevMesStr}`}
+            href={`/${id}/ranking?mes=${prevMesStr}`}
             className="flex size-9 items-center justify-center rounded-xl bg-[#faf5eb] border border-[#f0e6d5] text-[#7a6d60] font-bold transition-all hover:bg-[#f0e6d5] active:scale-95 select-none"
             aria-label="Mes anterior"
           >
@@ -93,7 +93,7 @@ export default async function RankingPage({ params, searchParams }: Props) {
             <div className="size-9" aria-hidden="true" />
           ) : (
             <Link
-              href={`/${usuario}/ranking?mes=${nextMesStr}`}
+              href={`/${id}/ranking?mes=${nextMesStr}`}
               className="flex size-9 items-center justify-center rounded-xl bg-[#faf5eb] border border-[#f0e6d5] text-[#7a6d60] font-bold transition-all hover:bg-[#f0e6d5] active:scale-95 select-none"
               aria-label="Mes siguiente"
             >

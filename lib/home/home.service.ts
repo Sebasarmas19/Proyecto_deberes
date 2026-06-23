@@ -15,7 +15,7 @@ import type { DeberHoy, ExtraSemana, HermanoEstado, HomeScreenProps } from "../.
 /**
  * Obtiene todos los datos consolidados necesarios para renderizar el HomeScreen.
  */
-export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScreenProps> {
+export async function getHomeScreenData(usuarioId?: string): Promise<HomeScreenProps> {
   // 1. Obtener el hogar (como es single-tenant por ahora, sacamos el primero)
   const [hogarActual] = await db.select().from(hogar).limit(1);
   if (!hogarActual) throw new Error("No hay un hogar configurado. Corre el seed.");
@@ -39,7 +39,7 @@ export async function getHomeScreenData(usuarioNombre?: string): Promise<HomeScr
   if (participantesActivos.length === 0) throw new Error("No hay participantes.");
 
   // Determinar quién es "Yo"
-  let yo = participantesActivos.find((p) => p.nombre.toLowerCase() === usuarioNombre?.toLowerCase());
+  let yo = participantesActivos.find((p) => p.id === usuarioId);
   if (!yo) yo = participantesActivos[0];
 
   // 4. Obtener asignaciones de HOY (deberes obligatorios) con sus criterios

@@ -6,18 +6,17 @@ import { listarDeberes } from "@/lib/deberes/deberes.repo";
 import { listarPlanSemanal } from "@/lib/rotacion/plan_semanal.repo";
 
 type Props = {
-  params: Promise<{ usuario: string }>;
+  params: Promise<{ id: string }>;
 };
 
 export default async function PlanSemanalPage({ params }: Props) {
-  const { usuario } = await params;
-  const decodedUsuario = decodeURIComponent(usuario);
+  const { id } = await params;
 
   const hogarId = await obtenerHogarActualId();
   const participantes = await listarParticipantes(hogarId);
 
   const yo = participantes.find(
-    (p) => p.nombre.toLowerCase() === decodedUsuario.toLowerCase()
+    (p) => p.id === id
   );
 
   if (!yo) {

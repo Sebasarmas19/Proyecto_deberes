@@ -10,15 +10,14 @@ import { redirect } from "next/navigation";
  */
 
 type Props = {
-  params: Promise<{ usuario: string }>;
+  params: Promise<{ id: string }>;
 };
 
 export default async function UsuarioHome({ params }: Props) {
-  const { usuario } = await params;
-  const nombreDecodificado = decodeURIComponent(usuario);
+  const { id } = await params;
 
   try {
-    const data = await getHomeScreenData(nombreDecodificado);
+    const data = await getHomeScreenData(id);
 
     return (
       <HomeScreen

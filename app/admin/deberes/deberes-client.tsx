@@ -8,6 +8,7 @@ import {
   desactivarDeberAction,
   reactivarDeberAction,
 } from "@/lib/deberes/deberes.actions";
+import toast from "react-hot-toast";
 import { Modal } from "@/app/_components/ui/modal";
 
 import { type Participante } from "@/lib/participantes/participantes.repo";
@@ -124,7 +125,7 @@ export function DeberesClient({
         res = await crearDeberAction(formData);
       }
       
-      if (!res.ok) alert("Error: " + res.error);
+      if (!res.ok) toast.error("Error: " + res.error);
     });
   }
 
@@ -137,7 +138,7 @@ export function DeberesClient({
         prev.map((d) => (d.id === id ? { ...d, activo: !activo } : d))
       );
       const res = activo ? await desactivarDeberAction(fd) : await reactivarDeberAction(fd);
-      if (!res.ok) alert("Error: " + res.error);
+      if (!res.ok) toast.error("Error: " + res.error);
     });
   }
 

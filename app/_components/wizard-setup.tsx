@@ -117,7 +117,7 @@ export function WizardSetup() {
     try {
       const res = await setupInicialAction(formData);
       if (res.ok) {
-        router.push("/");
+        router.push("/admin?onboarding=true");
       } else {
         setError(res.error);
         setCargando(false);
@@ -228,6 +228,15 @@ export function WizardSetup() {
                 <p className="text-[14px] font-medium leading-[1.5] text-[#7a6d60]">
                   La configuración de los puntos por tarea se podrá ajustar luego desde el panel del Admin. Por ahora, solo necesitamos asegurar tu panel.
                 </p>
+                <div className="rounded-[14px] bg-[#fdf2f2] p-4 border border-[#fbdada]">
+                  <p className="text-[13px] font-bold text-[#d94a4a] flex gap-2">
+                    <span aria-hidden="true">⚠️</span>
+                    IMPORTANTE
+                  </p>
+                  <p className="mt-1 text-[13px] font-semibold text-[#d94a4a]/90">
+                    No olvides esta contraseña. Es la llave maestra de la app y no existe opción de "Recuperar contraseña".
+                  </p>
+                </div>
                 <div>
                   <label className="mb-2 block text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#b19a80]">
                     Contraseña de Admin

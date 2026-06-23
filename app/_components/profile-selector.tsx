@@ -158,7 +158,7 @@ function EstadoConUsuarios({
               onClick={() => {
                 setLoadingUser(user.id);
                 startTransition(() => {
-                  router.push(`/${encodeURIComponent(user.nombre.toLowerCase())}`);
+                  router.push(`/${user.id}`);
                 });
               }}
               className={`group flex flex-col items-center gap-3 outline-none transition-opacity duration-200 ${isOtherLoading ? "opacity-40 pointer-events-none" : ""}`}

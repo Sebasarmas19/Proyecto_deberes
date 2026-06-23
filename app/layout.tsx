@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
 // Tipografias del diseno: Bricolage Grotesque para titulos (con caracter) y
@@ -50,7 +51,23 @@ export default function RootLayout({
       lang="es"
       className={`${bricolage.variable} ${hanken.variable} h-full antialiased`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full bg-crema">
+        {children}
+        <Toaster 
+          position="top-center" 
+          toastOptions={{
+            duration: 3500,
+            style: {
+              background: '#fcf8f2',
+              color: '#3c280f',
+              border: '1.5px solid #e6d9c4',
+              borderRadius: '16px',
+              fontWeight: 600,
+              boxShadow: '0 10px 30px -10px rgba(60,40,15,0.15)',
+            },
+          }} 
+        />
+      </body>
     </html>
   );
 }

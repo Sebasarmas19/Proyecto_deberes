@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
 import type { AdminDashboardData } from "../../lib/home/admin.service";
 
 /**
@@ -82,7 +83,23 @@ const ACCESOS_RAPIDOS: AccesoRapido[] = [
 
 export function AdminDashboard({ data }: { data: AdminDashboardData }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = React.useTransition();
+
+  useEffect(() => {
+    if (searchParams.get("onboarding") === "true") {
+      // Usamos setTimeout para no pisar la carga del componente si hay muchos renders
+      setTimeout(() => {
+        toast.success("¡Hogar creado! Crea tus primeros deberes aquí.", {
+          duration: 6000,
+          icon: '🎉',
+        });
+        // Remove the query param gracefully
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }, 500);
+    }
+  }, [searchParams]);
 
   return (
     <main className="mx-auto min-h-dvh max-w-[480px] px-4 pb-10 pt-6">

@@ -1,6 +1,7 @@
 import { AdminDashboard } from "../_components/admin-dashboard";
 import { getAdminDashboardData } from "../../lib/home/admin.service";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 /**
  * Página principal del perfil Admin.
@@ -11,7 +12,11 @@ import { redirect } from "next/navigation";
 export default async function AdminPage() {
   try {
     const data = await getAdminDashboardData();
-    return <AdminDashboard data={data} />;
+    return (
+      <Suspense fallback={<div className="p-8 text-center text-[#9a8c7c]">Cargando panel...</div>}>
+        <AdminDashboard data={data} />
+      </Suspense>
+    );
   } catch {
     // Si no hay hogar configurado, redirigir al setup.
     redirect("/setup");
