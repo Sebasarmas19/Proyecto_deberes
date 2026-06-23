@@ -1,6 +1,7 @@
 import { db } from "../db";
 import { hogar, participantes } from "../db/schema";
 import { obtenerPrimerHogar } from "./hogar.repo";
+import { hashClave } from "@/lib/auth/auth.service";
 
 export type SetupInicialInput = {
   nombre: string;
@@ -44,6 +45,7 @@ export async function setupInicialHogar(input: SetupInicialInput) {
         nombre,
         esAdmin: false, // El admin es un perfil general
         ordenRotacion: index + 1,
+        pinHash: hashClave("0000"), // PIN temporal por defecto
       }));
 
     if (participantesData.length > 0) {

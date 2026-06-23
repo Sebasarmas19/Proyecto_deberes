@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import { obtenerFechaDeNegocio } from "@/lib/shared/date";
@@ -28,6 +29,11 @@ import {
 export async function generarHoyAction(
   formData?: FormData,
 ): Promise<Resultado<number>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const sobrescribir = formData?.get("sobrescribir") === "on";
     const creadas = await generarAsignacionesDeHoy({ sobrescribir });
@@ -44,6 +50,11 @@ export async function generarHoyAction(
 export async function generarSemanaAction(
   formData?: FormData,
 ): Promise<Resultado<number>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const sobrescribir = formData?.get("sobrescribir") === "on";
     const total = await generarAsignacionesRango(obtenerFechaDeNegocio(), 7, {

@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import { registrarAccion } from "@/lib/auditoria/auditoria.service";
@@ -25,6 +26,11 @@ import { insertarTransaccion, type Transaccion } from "./puntos.repo";
 export async function ajustarPuntosAction(
   formData: FormData,
 ): Promise<Resultado<Transaccion>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const adminId = String(formData.get("adminId") ?? "").trim();
     const participanteId = String(formData.get("participanteId") ?? "").trim();

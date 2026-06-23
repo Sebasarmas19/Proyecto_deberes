@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import {
@@ -54,6 +55,11 @@ function leerMaxReclamos(formData: FormData, campo: string): number | null {
 export async function crearDeberAction(
   formData: FormData,
 ): Promise<Resultado<Deber>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const input: CrearDeberInput = {
       nombre: String(formData.get("nombre") ?? ""),
@@ -85,6 +91,11 @@ export async function crearDeberAction(
 export async function editarDeberAction(
   formData: FormData,
 ): Promise<Resultado<Deber>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del deber.");
@@ -118,6 +129,11 @@ export async function editarDeberAction(
 export async function desactivarDeberAction(
   formData: FormData,
 ): Promise<Resultado<Deber>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del deber.");
@@ -132,6 +148,11 @@ export async function desactivarDeberAction(
 export async function reactivarDeberAction(
   formData: FormData,
 ): Promise<Resultado<Deber>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const id = String(formData.get("id") ?? "");
     if (!id) throw new Error("Falta el id del deber.");

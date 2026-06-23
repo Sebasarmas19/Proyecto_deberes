@@ -135,14 +135,14 @@ function EstadoConUsuarios({
   nombreHogar: string;
   participantes: PerfilParticipante[];
 }) {
-  const router = useRouter();
+  const [loadingUser, setLoadingUser] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedUserForPin, setSelectedUserForPin] = useState<{ id: string; nombre: string } | null>(null);
 
   // Todos los participantes son usuarios normales.
   // "Admin" es un perfil fijo del sistema, no un participante.
 
   const [isPending, startTransition] = useTransition();
-  const [loadingUser, setLoadingUser] = useState<string | null>(null);
 
   return (
     <div className="flex w-full max-w-[400px] flex-col items-center">
@@ -156,10 +156,7 @@ function EstadoConUsuarios({
             <button
               key={user.id}
               onClick={() => {
-                setLoadingUser(user.id);
-                startTransition(() => {
-                  router.push(`/${user.id}`);
-                });
+                setSelectedUserForPin({ id: user.id, nombre: user.nombre });
               }}
               className={`group flex flex-col items-center gap-3 outline-none transition-opacity duration-200 ${isOtherLoading ? "opacity-40 pointer-events-none" : ""}`}
               aria-label={`Entrar como ${user.nombre}`}
@@ -259,9 +256,17 @@ function EstadoConUsuarios({
         </button>
       </div>
 
-      {/* Modal de contraseña */}
+      {/* Modal de contraseña de admin */}
       {showPasswordModal && (
         <PasswordModal onClose={() => setShowPasswordModal(false)} />
+      )}
+
+      {/* Modal de PIN de usuario */}
+      {selectedUserForPin && (
+        <PinModal 
+          user={selectedUserForPin} 
+          onClose={() => setSelectedUserForPin(null)} 
+        />
       )}
     </div>
   );
@@ -272,7 +277,7 @@ function EstadoConUsuarios({
 function PasswordModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -301,20 +306,27 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(false);
-
-    // TODO: Validar la contraseña contra la base de datos.
-    // Por ahora, aceptamos cualquier contraseña no vacía para avanzar.
-    await new Promise((r) => setTimeout(r, 400)); // Simular latencia
-
     if (password.trim() === "") {
-      setError(true);
+      setErrorMsg("La contraseña no puede estar vacía");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    const formData = new FormData();
+    formData.append("clave", password);
+
+    const { loginAdminAction } = await import("@/lib/auth/auth.actions");
+    const res = await loginAdminAction(formData);
+
+    if (!res.ok) {
+      setErrorMsg(res.error);
       setLoading(false);
       return;
     }
 
-    router.push("/admin");
+    window.location.href = "/admin";
   };
 
   return (
@@ -381,19 +393,19 @@ function PasswordModal({ onClose }: { onClose: () => void }) {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                setError(false);
+                setErrorMsg("");
               }}
               className="w-full rounded-[14px] border-[1.5px] border-[#e6d9c4] bg-[#faf5eb] p-[14px] text-[15px] font-medium text-tinta placeholder:text-[#c5b090] transition-colors focus:border-terracota focus:outline-none focus:ring-[2px] focus:ring-terracota/20"
-              aria-invalid={error}
-              aria-describedby={error ? "pw-error" : undefined}
+              aria-invalid={!!errorMsg}
+              aria-describedby={errorMsg ? "pw-error" : undefined}
             />
-            {error && (
+            {errorMsg && (
               <p
                 id="pw-error"
                 role="alert"
                 className="mt-2 text-[13px] font-semibold text-[#c0392b]"
               >
-                La contraseña no puede estar vacía
+                {errorMsg}
               </p>
             )}
           </div>
@@ -474,5 +486,106 @@ function AdminIcon({ size = 40, color = "#A0907C" }: { size?: number; color?: st
         fillOpacity="0.1"
       />
     </svg>
+  );
+}
+
+// ── Modal de PIN ────────────────────────────────────────────────────────────
+
+function PinModal({ user, onClose }: { user: { id: string; nombre: string }; onClose: () => void }) {
+  const router = useRouter();
+  const [pin, setPin] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pin.trim().length < 4) {
+      setErrorMsg("El PIN debe tener 4 dígitos");
+      return;
+    }
+
+    setLoading(true);
+    setErrorMsg("");
+
+    const formData = new FormData();
+    formData.append("participanteId", user.id);
+    formData.append("pin", pin);
+
+    const { loginParticipanteAction } = await import("@/lib/auth/auth.actions");
+    const res = await loginParticipanteAction(formData);
+
+    if (!res.ok) {
+      setErrorMsg(res.error);
+      setLoading(false);
+      return;
+    }
+
+    window.location.href = `/${user.id}`;
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="animate-fade-in absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+      <div role="dialog" aria-modal="true" className="animate-pop-lg relative z-10 w-full max-w-[320px] rounded-[26px] bg-crema-card p-6 outline-none" style={{ boxShadow: "0 20px 50px -16px rgba(60,40,15,.3)" }}>
+        <button type="button" onClick={onClose} aria-label="Cerrar" className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-full bg-[#f0e6d5] text-[14px] text-[#9a8c7c] transition-colors hover:bg-[#e6d9c4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracota">✕</button>
+        
+        <div className="flex flex-col items-center pb-5 pt-2">
+          <p className="font-display text-[20px] font-extrabold tracking-[-0.02em] text-tinta">
+            Hola, {user.nombre}
+          </p>
+          <p className="mt-0.5 text-[13px] font-medium text-[#9a8c7c] text-center">
+            Ingresa tu PIN de 4 dígitos
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <input
+              ref={inputRef}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={4}
+              placeholder="••••"
+              value={pin}
+              onChange={(e) => {
+                setPin(e.target.value.replace(/\D/g, ""));
+                setErrorMsg("");
+              }}
+              className="w-full text-center tracking-[0.5em] rounded-[14px] border-[1.5px] border-[#e6d9c4] bg-[#faf5eb] p-[14px] text-[20px] font-medium text-tinta transition-colors focus:border-terracota focus:outline-none focus:ring-[2px] focus:ring-terracota/20"
+            />
+            {errorMsg && (
+              <p role="alert" className="mt-2 text-[13px] font-semibold text-[#c0392b] text-center">
+                {errorMsg}
+              </p>
+            )}
+          </div>
+          <button type="submit" disabled={loading} className="flex w-full items-center justify-center gap-2.5 rounded-[16px] p-[16px] font-display text-[17px] font-bold tracking-[-0.01em] text-white transition-all hover:brightness-[1.04] active:scale-[0.975] disabled:cursor-not-allowed disabled:opacity-50" style={{ background: "linear-gradient(180deg, #E2733F, #D2602F)", boxShadow: "0 14px 26px -10px rgba(210,96,47,.75)" }}>
+            {loading ? <span className="inline-block size-[20px] animate-spin rounded-full border-[2.5px] border-white/30 border-t-white" /> : "Entrar"}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -63,6 +63,21 @@ export const participantes = pgTable("participantes", {
   activo: boolean("activo").notNull().default(true),
   // Posicion en el circulo de rotacion.
   ordenRotacion: integer("orden_rotacion"),
+  // PIN encriptado para acceso al perfil. Nullable por si es una casa sin PIN
+  pinHash: text("pin_hash"),
+  creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// sesiones — tokens de acceso (cookies) para usuarios y administrador
+// ─────────────────────────────────────────────────────────────────────────────
+export const sesiones = pgTable("sesiones", {
+  id: text("id").primaryKey(), // Token generado criptográficamente
+  rol: text("rol", { enum: ["admin", "usuario"] }).notNull(),
+  participanteId: uuid("participante_id").references(() => participantes.id, {
+    onDelete: "cascade",
+  }),
+  expiraEn: timestamp("expira_en", { withTimezone: true }).notNull(),
   creadoEn: timestamp("creado_en", { withTimezone: true }).defaultNow(),
 });
 

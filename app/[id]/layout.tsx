@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { obtenerHogarActualId } from "@/lib/hogar/hogar.service";
 import { listarParticipantes } from "@/lib/participantes/participantes.repo";
 import { BottomNavBar } from "./bottom-nav-bar";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 type Props = {
   children: React.ReactNode;
@@ -19,6 +20,11 @@ export default async function UsuarioLayout({ children, params }: Props) {
   const participanteObj = participantes.find((p) => p.id === id);
 
   if (!participanteObj) {
+    redirect("/");
+  }
+
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.participanteId !== id) {
     redirect("/");
   }
 

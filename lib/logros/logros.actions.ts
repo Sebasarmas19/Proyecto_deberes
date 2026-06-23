@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import {
@@ -41,6 +42,10 @@ export async function evaluarLogrosAction(): Promise<Resultado<LogroNuevo[]>> {
 export async function cerrarMesAction(
   formData?: FormData,
 ): Promise<Resultado<{ titulos: TituloNuevo[]; logros: LogroNuevo[] }>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
   try {
     const mesParam = formData?.get("mes");
     const mes =

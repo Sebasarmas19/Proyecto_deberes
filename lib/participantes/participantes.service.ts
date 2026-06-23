@@ -1,4 +1,5 @@
 import { obtenerHogarActualId } from "@/lib/hogar/hogar.service";
+import { hashClave } from "@/lib/auth/auth.service";
 import {
   actualizarParticipante,
   insertarParticipante,
@@ -55,6 +56,7 @@ export async function crearParticipante(
     fotoUrl: input.fotoUrl?.trim() || null,
     esAdmin: input.esAdmin ?? false,
     ordenRotacion,
+    pinHash: hashClave("0000"),
   });
 }
 

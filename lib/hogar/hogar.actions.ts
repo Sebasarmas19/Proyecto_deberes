@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual, hashClave } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import {
@@ -32,7 +33,7 @@ export async function setupInicialAction(
       bonoAyuda: String(formData.get("bonoAyuda") ?? "5"),
       penalizacionFallo: String(formData.get("penalizacionFallo") ?? "15"),
       penalizacionColectiva: String(formData.get("penalizacionColectiva") ?? "10"),
-      claveAdmin: String(formData.get("claveAdmin") ?? ""),
+      claveAdmin: hashClave(String(formData.get("claveAdmin") ?? "")),
       // Nombres de participantes, separados por coma
       nombresParticipantes: String(formData.get("participantes") ?? "")
         .split(",")
@@ -60,6 +61,11 @@ export async function setupInicialAction(
 export async function actualizarConfiguracionHogarAction(
   formData: FormData,
 ): Promise<Resultado<Hogar>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const hogarId = String(formData.get("hogarId") ?? "").trim();
     const adminId = String(formData.get("adminId") ?? "").trim();
@@ -71,7 +77,7 @@ export async function actualizarConfiguracionHogarAction(
     const input = {
       nombre: String(formData.get("nombre") ?? "").trim(),
       horaCierreDia: String(formData.get("horaCierreDia") ?? "").trim(),
-      claveAdmin: String(formData.get("claveAdmin") ?? "").trim(),
+      claveAdmin: formData.get("claveAdmin") ? hashClave(String(formData.get("claveAdmin") ?? "").trim()) : undefined,
       bonoAyuda: String(formData.get("bonoAyuda") ?? "").trim(),
       penalizacionFallo: String(formData.get("penalizacionFallo") ?? "").trim(),
       penalizacionColectiva: String(formData.get("penalizacionColectiva") ?? "").trim(),

@@ -1,4 +1,5 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
 
 import { revalidatePath } from "next/cache";
 import { registrarAccion } from "@/lib/auditoria/auditoria.service";
@@ -33,6 +34,11 @@ function requerir(formData: FormData, campo: string): string {
 export async function crearAusenciaAction(
   formData: FormData,
 ): Promise<Resultado<Ausencia>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const ausencia = await crearAusencia({
       participanteId: requerir(formData, "participanteId"),
@@ -51,6 +57,11 @@ export async function crearAusenciaAction(
 export async function aprobarAusenciaAction(
   formData: FormData,
 ): Promise<Resultado<Ausencia>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const ausenciaId = requerir(formData, "ausenciaId");
     const adminId = requerir(formData, "adminId");
@@ -71,6 +82,11 @@ export async function aprobarAusenciaAction(
 export async function eliminarAusenciaAction(
   formData: FormData,
 ): Promise<Resultado<null>> {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const ausenciaId = requerir(formData, "ausenciaId");
     const adminId = requerir(formData, "adminId");

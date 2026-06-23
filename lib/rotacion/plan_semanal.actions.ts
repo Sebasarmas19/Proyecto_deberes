@@ -1,4 +1,6 @@
 "use server";
+import { verificarSesionActual } from "@/lib/auth/auth.service";
+
 
 import { revalidatePath } from "next/cache";
 import { obtenerHogarActualId } from "@/lib/hogar/hogar.service";
@@ -7,6 +9,11 @@ import { reemplazarPlanSemanal } from "./plan_semanal.repo";
 export async function guardarPlanSemanalAction(
   planAsignaciones: { deberId: string; participanteId: string; diaSemana: number }[]
 ) {
+  const sesion = await verificarSesionActual();
+  if (!sesion || sesion.rol !== "admin") {
+    return { ok: false, error: "No autorizado. Requiere permisos de administrador." } as any;
+  }
+
   try {
     const hogarId = await obtenerHogarActualId();
 

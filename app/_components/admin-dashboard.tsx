@@ -126,8 +126,12 @@ export function AdminDashboard({ data }: { data: AdminDashboardData }) {
           {/* Botón salir */}
           <button
             type="button"
-            onClick={() => router.push("/")}
-            aria-label="Volver al selector de perfiles"
+            onClick={async () => {
+              const { logoutAction } = await import("@/lib/auth/auth.actions");
+              await logoutAction();
+              router.push("/");
+            }}
+            aria-label="Cerrar sesión de admin"
             className="flex size-[38px] items-center justify-center rounded-full bg-[#b19a80] text-[16px] font-bold text-white shadow-sm transition-colors hover:bg-[#9a8c7c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-terracota"
           >
             ←
