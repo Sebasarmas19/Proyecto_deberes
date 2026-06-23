@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/recordatorio",
-      "schedule": "0 10,18,23 * * *"
+      "schedule": "0 10 * * *"
     }
   ]
 }
