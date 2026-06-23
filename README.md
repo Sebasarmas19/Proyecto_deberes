@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dinow 🦖
 
-## Getting Started
+**Dinow** es una aplicación web moderna (PWA) diseñada para ayudar a los hogares a organizar, recordar y registrar sus deberes domésticos de manera justa, transparente y divertida. Implementa un sistema completo de planificación semanal, acumulación de puntos, rankings y logros, manteniendo un libro mayor inviolable para evitar conflictos.
 
-First, run the development server:
+## ✨ Características Principales
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 🎯 **Organización Transparente**: Define deberes, sus niveles de obligatoriedad y asígnalos mediante un Plan Semanal predecible o dejalos como reclamables para quien desee hacerlos.
+- 🏆 **Gamificación y Puntos**: Los participantes ganan (o pierden) puntos según su cumplimiento. ¡Compite por llegar al top del ranking del hogar!
+- 🤝 **Solidaridad y Coberturas**: ¿No puedes hacer tu tarea? Alguien más puede cubrirte y llevarse puntos extra (Bono de Ayuda), siempre que confirmen la cobertura.
+- 🎖️ **Logros y Títulos Mensuales**: "Limpiador Estrella", "Salvador del Mes"... el sistema premia las buenas conductas a lo largo del mes.
+- 🔒 **Seguridad y Auditoría**: El Administrador tiene una contraseña segura, y cada participante tiene su propio PIN. Cualquier cambio o ajuste hecho por el admin queda guardado en un registro de auditoría público para todos.
+- 📱 **Instalable (PWA)**: Diseñado para usarse como una aplicación nativa en tu teléfono. Se puede instalar en la pantalla de inicio y tiene soporte para Notificaciones Push.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Stack Tecnológico
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router) + TypeScript
+- **Estilos**: Tailwind CSS con una paleta de colores premium y diseño de interfaz moderno
+- **Base de Datos**: PostgreSQL alojado en [Supabase](https://supabase.com/)
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team/)
+- **Autenticación**: Sistema customizado por cookies seguras y PINs cifrados con `scrypt`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Instalación y Uso Local
 
-## Learn More
+1. **Clonar el repositorio**
+   ```bash
+   git clone https://github.com/TU_USUARIO/dinow.git
+   cd dinow
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Variables de Entorno**
+   Crea un archivo `.env.local` en la raíz del proyecto. Necesitarás tener una base de datos PostgreSQL en Supabase.
+   ```env
+   DATABASE_URL="postgresql://postgres.[PROYECTO]:[PASSWORD]@aws-0-REGION.pooler.supabase.com:6543/postgres"
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY="tu_vapid_public_key"
+   VAPID_PRIVATE_KEY="tu_vapid_private_key"
+   CRON_SECRET="una_cadena_secreta_cualquiera"
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Preparar la Base de Datos**
+   Asegúrate de empujar el esquema de Drizzle a tu base de datos:
+   ```bash
+   npm run db:push
+   ```
 
-## Deploy on Vercel
+5. **Iniciar el servidor de desarrollo**
+   ```bash
+   npm run dev
+   ```
+   Abre [http://localhost:3000](http://localhost:3000) en tu navegador. Si la base de datos está vacía, serás redirigido a la pantalla de Setup Inicial para configurar el hogar.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📦 Producción (Vercel)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+El proyecto está optimizado para desplegarse fácilmente en Vercel. 
+- Al desplegar, asegúrate de configurar las mismas Variables de Entorno.
+- Configura las Cron Jobs en `vercel.json` (ya incluido) para ejecutar la generación de días (`/api/cron/generar-dia`) y los recordatorios (`/api/cron/recordatorio`).
+
+## 📚 Arquitectura
+
+La lógica de negocio se encuentra en la carpeta `lib/`, separada por dominios en lugar de capas globales:
+- `lib/<dominio>.actions.ts`: Server Actions (Puntos de entrada desde el cliente)
+- `lib/<dominio>.service.ts`: Lógica de negocio core (Reglas del hogar)
+- `lib/<dominio>.repo.ts`: Acceso a la base de datos
+- `lib/db/`: Configuración y esquema estricto de Drizzle ORM
+
+## ⚖️ El Reglamento
+
+Dinow se basa en reglas inmutables de convivencia:
+1. **Los Puntos no se inventan**: Toda suma o resta proviene del libro mayor (`transacciones_puntos`).
+2. **Cierre de Día**: El día "doméstico" termina a las 3:00 AM (configurable), permitiendo cumplir deberes de trasnocho.
+3. **No Negociables**: Hay deberes críticos que, si nadie hace, desencadenan una penalización colectiva para todo el hogar.
+
+*(Revisa el documento `docs/02_El_Reglamento.md` para el detalle completo de las mecánicas del juego)*.
+
+---
+

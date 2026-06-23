@@ -41,3 +41,15 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .agents/
+
+# documentación específica del caso de uso
+/docs
+
+# configuraciones de IA y pruebas locales
+/.claude/
+/.agents/
+/AGENTS.md
+/CLAUDE.md
+/PROJECT.md
+/skills-lock.json
+test.ts
