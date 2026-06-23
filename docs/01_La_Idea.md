@@ -120,11 +120,11 @@ A fin de mes hay una pequeña "ceremonia" en la app: se muestran los títulos y 
 
 ---
 
-## 7. La motivación: fotos y recordatorios
+## 7. La motivación: fotos, PWA y recordatorios
 
-Cuando la app te recuerda un deber, te muestra una **foto que motiva**: una foto de Sofi para animarte a atenderla, o una foto de mamá sonriendo en otros recordatorios. Son emocionales, para empujarte a cumplir — no son prueba de nada.
+Cuando la app te recuerda un deber, te muestra una **foto que motiva**: una foto de Sofi para animarte a atenderla, o una foto de mamá sonriendo en otros recordatorios. Son emocionales, para empujarte a cumplir — no son prueba de nada. Además, cada usuario puede tener su propio **Avatar personalizado** para hacer la experiencia más íntima.
 
-Si agregamos la página a la pantalla de inicio del teléfono, puede mandar **notificaciones** (con permiso). Pase lo que pase, al abrirla siempre se ve claro el deber obligatorio del día.
+La aplicación está diseñada como una **PWA (Progressive Web App)**. Al agregar la página a la pantalla de inicio del teléfono, se comporta como una app nativa y, con el permiso del usuario, manda **notificaciones Push** automáticas. Estas notificaciones y la rotación diaria se disparan gracias a rutinas de fondo automatizadas (via GitHub Actions), asegurando que pase lo que pase, al abrirla siempre se vea claro el deber obligatorio del día.
 
 ---
 
@@ -133,7 +133,7 @@ Si agregamos la página a la pantalla de inicio del teléfono, puede mandar **no
 Hay un modo admin al que se entra con una contraseña maestra. **El perfil administrador no es una persona específica ni un participante del hogar.** Cualquier participante que conozca la contraseña maestra de la casa puede entrar a este modo. El admin puede:
 
 - Crear y editar el plan de la semana desde la página (no a nivel de código, para que siempre se pueda ajustar).
-- Editar, añadir o eliminar deberes adicionales, y configurar la **disponibilidad** (días en que aparecen) y los **cupos** de los extras (cuántas veces se reclaman en total y si el período es semanal o mensual).
+- Editar, añadir o eliminar deberes adicionales, y configurar la **disponibilidad** (días en que aparecen) y los **cupos** de los extras (cuántas veces se reclaman en total y si el límite es por persona o global para la casa).
 - Editar deberes cumplidos: anular puntaje, añadir puntos por un deber olvidado, asignar o quitar deberes hechos.
 - Ver y editar el puntaje de todos.
 - Decidir puntaje parcial (ej. ropa con menos de 3 tandas).

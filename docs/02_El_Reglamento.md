@@ -41,7 +41,8 @@ Se cumple cuando:
 *Se marca con check, sin foto.*
 
 ### 1.4 Extras de la semana (reclamables · con foto)
-Los extras no están atados al fin de semana. El admin configura cada uno con tres cosas: **(a)** los días en que aparece (toda la semana, fin de semana, o días específicos); **(b)** el máximo total de reclamos por período (es el cupo del hogar, no por persona); **(c)** si ese período es **semanal** o **mensual**. Varios participantes pueden reclamar el mismo extra en días distintos hasta agotar el cupo; cuando se agota, deja de poder reclamarse hasta que el período reinicie.
+Los extras no están atados al fin de semana. El admin configura cada uno con tres cosas: **(a)** los días en que aparece; **(b)** el máximo de reclamos permitidos; **(c)** si el límite es **por persona** o **global de la casa** (`limite_por_persona`).
+Si es global, varios participantes pueden reclamar el mismo extra hasta agotar el cupo de la casa; si es personal, cada uno tiene su propio cupo. Cuando se agota, deja de poder reclamarse hasta que el período (semanal o mensual) reinicie.
 - **Lavar ropa (15 pts):** meter a lavar, sacar y pasar a la secadora un mínimo de **3 tandas**. Hasta **3 reclamos por semana**. El admin puede otorgar puntaje parcial por menos.
 - **Limpieza profunda (20 pts):** barrer la casa, pasar coleto, y recoger las papeleras de los baños, botarlas y poner bolsas nuevas.
 - **Bañar a Sofi (20 pts):** aplicarle agua y shampoo, desenredarla, y secarla bien. Disponible cualquier día, con período **mensual** y un máximo de **1 reclamo**.
@@ -73,9 +74,9 @@ Los extras no están atados al fin de semana. El admin configura cada uno con tr
 ## Artículo 3 · Reglas de ayuda y sustitución
 
 1. Hacer el deber de otro otorga **+15 puntos**, más que tu propio deber, para premiar la ayuda.
-2. **Solo cuentan esos puntos si ya cumpliste tu propio deber del día.** Si no, la ayuda vale 0 para ambos.
-3. **No se requiere confirmación del ayudado.** Al registrar que cubriste a alguien, el deber se da por cumplido y el bono se otorga de forma automática e inmediata.
-4. Cubrir a otro requiere **justificación** (texto o foto), que queda en el registro. Da igual si fue porque se lo ayudaste o porque te pidió el favor: el sistema lo trata igual.
+2. **Solo cuentan esos puntos si ya cumpliste tu propio deber del día.** Si no, la ayuda vale 0 para ambos (hasta que hagas el tuyo).
+3. **Se aprueba automáticamente.** Al registrar que cubriste a alguien, el sistema lo marca como `confirmado = true` de una vez para que recibas tu bono sin depender de que la otra persona se conecte a aceptar.
+4. Cubrir a otro requiere **justificación** (texto o foto), que queda en el registro público.
 
 ---
 

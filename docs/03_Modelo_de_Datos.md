@@ -25,6 +25,7 @@ erDiagram
   PARTICIPANTES ||--o{ LOGROS_OBTENIDOS : gana
   PARTICIPANTES ||--o{ TITULOS_MES : gana
   PARTICIPANTES ||--o{ REGISTRO_AUDITORIA : ejecuta
+  PARTICIPANTES ||--o{ SUSCRIPCIONES_PUSH : recibe_alertas
 ```
 
 ---
@@ -74,7 +75,9 @@ Los deberes, totalmente configurables por el admin. Dos ejes independientes: `ti
 | puntos | numeric | soporta decimales (ej. 2.5) |
 | cadencia | text | `'diaria'` \| `'dia_por_medio'` \| `'semanal'` \| `'mensual'`. Para reclamables indica el período de reinicio del cupo (`'semanal'` o `'mensual'`) |
 | dias_disponibles | text[] / jsonb | días de la semana en que el deber se muestra. "Toda la semana" = los 7 días; "fin de semana" = viernes, sábado y domingo |
-| max_reclamos | int | nullable — número total de veces que el extra puede reclamarse por período (total del hogar, no por persona). Null = sin límite. Solo aplica a reclamables |
+| max_reclamos | int | nullable — número total de veces que el extra puede reclamarse por período. Null = sin límite. Solo aplica a reclamables |
+| asignado_a | uuid | FK → participantes, nullable (para obligatorios o extras fijos a un usuario) |
+| limite_por_persona | boolean | default false — define si max_reclamos es un pozo común de la casa o un límite por participante |
 | requiere_foto | boolean | los obligatorios = false (check); reclamables/opcionales = true |
 | activo | boolean | default true — retirar sin borrar historial |
 | creado_en | timestamptz | |
@@ -126,7 +129,7 @@ Ausencias declaradas (viajes, días fuera). El plan y el ranking de porcentaje l
 | fecha | date | día que cuenta (respeta el cierre de las 3 AM) |
 | estado | text | `'cumplido_propio'` \| `'cubrio_a_otro'` \| `'reclamado'` |
 | cubierto_a | uuid | FK → participantes, nullable (a quién cubrió) |
-| confirmado | boolean | default false — para coberturas, lo confirma el ayudado |
+| confirmado | boolean | default false — aunque el esquema soporta confirmación manual, la app actual lo auto-confirma al registrar cobertura |
 | confirmado_por | uuid | FK → participantes, nullable |
 | foto_url | text | nullable — prueba para reclamables/opcionales y coberturas |
 | nota | text | nullable — justificación |
@@ -181,6 +184,18 @@ Cada acción del admin, visible para los tres (transparencia).
 | detalle | jsonb | qué cambió exactamente |
 | fecha | timestamptz | |
 
+### `suscripciones_push`
+Tabla de suscripciones para las notificaciones Push (PWA) de cada usuario.
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| id | uuid | PK |
+| participante_id | uuid | FK → participantes |
+| endpoint | text | URL única del navegador/dispositivo |
+| p256dh | text | Llave pública para encriptar la notificación |
+| auth | text | Secreto de autenticación |
+| creado_en | timestamptz | default now() |
+
 ### `fotos_motivacionales`
 Las fotos que se muestran en los recordatorios para motivar (Sofi, mamá sonriendo). **No son pruebas**, son motivación.
 
@@ -222,4 +237,6 @@ Reglas clave del motor:
 - **Los puntos se derivan, no se duplican:** todo ranking se calcula sumando `transacciones_puntos`. Esto da el historial, la auditoría y permite que el admin corrija con filas de tipo `ajuste_admin` en vez de sobrescribir.
 - **Motor de rotación genérico:** `asignaciones` soporta cualquier número de participantes y de deberes rotativos. La rotación se calcula como dos círculos que giran un paso por día (ver documento de la idea).
 - **Seguridad (RLS):** un participante solo puede insertar `registros` y confirmar coberturas que le correspondan; solo el admin escribe en `transacciones_puntos` (tipo `ajuste_admin`), edita `asignaciones` y aprueba `ausencias`. Toda acción de admin se refleja en `registro_auditoria`.
-- **Decisión pendiente para la fase de build:** cómo se autentican los tres participantes en un solo hogar (login real con `auth_user_id`, o selección simple de "quién soy"). El esquema ya deja `auth_user_id` listo para lo primero.
+- **Decisión pendiente para la fase de build:** resuelta usando selección simple de perfiles ("quién soy") vinculados a una cookie, preparado para migrar a `auth_user_id` de Supabase después.
+- **Rutas Next.js:** Las rutas principales de la aplicación se agrupan en carpetas dinámicas `app/[id]/` usando el `id` (UUID) del participante en lugar de su nombre.
+- **Crons y Automatización:** La ejecución diaria (3 AM) y los recordatorios están automatizados vía **GitHub Actions** (`.github/workflows`) para evadir los límites restrictivos del plan gratuito Hobby de Vercel.
